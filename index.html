@@ -594,6 +594,7 @@
     const DB_KEY = "matrix_vault_enc";
     const DB_DATE_KEY = "matrix_vault_last_change";
     const STORAGE_TYPE_KEY = "matrix_storage_type"; // 'ls' lub 'custom'
+    const UI_LANG_KEY = "matrix_ui_lang"; // Trwały Zapis Języka UI
     const GITHUB_LINK = "https://github.com/spazma/matrix-auth";
 
     let customFileHandle = null;
@@ -1122,6 +1123,7 @@
       currentLanguage = lang;
       languagePendingOnUnlock = lang;
       languageChangedBeforeUnlock = true;
+      localStorage.setItem(UI_LANG_KEY, lang); // Trwały zapis w przeglądarce
 
       document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.lang === lang);
@@ -1135,6 +1137,7 @@
       currentLanguage = lang;
       languagePendingOnUnlock = null;
       languageChangedBeforeUnlock = false;
+      localStorage.setItem(UI_LANG_KEY, lang); // Trwały zapis w przeglądarce
 
       document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.lang === lang);
@@ -1163,7 +1166,7 @@
 
     function getLanguageFromVault() {
       if (!vaultData || !vaultData._settings || !vaultData._settings.language) {
-        return browserLanguage;
+        return localStorage.getItem(UI_LANG_KEY) || browserLanguage;
       }
       return vaultData._settings.language;
     }
@@ -1191,22 +1194,25 @@
       }
     }
 
-	function initializeLanguageOnAuthScreen() {
-	  if (!languageChangedBeforeUnlock) {
-		browserLanguage = detectBrowserLanguage();
-		currentLanguage = browserLanguage;
-	  }
+    function initializeLanguageOnAuthScreen() {
+      const savedUiLang = localStorage.getItem(UI_LANG_KEY);
+      if (savedUiLang) {
+        currentLanguage = savedUiLang;
+      } else if (!languageChangedBeforeUnlock) {
+        browserLanguage = detectBrowserLanguage();
+        currentLanguage = browserLanguage;
+      }
 
-	  document.querySelectorAll('.lang-btn').forEach(btn => {
-		btn.classList.toggle('active', btn.dataset.lang === currentLanguage);
-	  });
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === currentLanguage);
+      });
 
-	  applyTranslations();
-	  updateLangInfo();
-	  updateDBStatusUI();
-	  checkDbExistsAndUpdateUI();
-	  checkForUpdates();
-	}
+      applyTranslations();
+      updateLangInfo();
+      updateDBStatusUI();
+      checkDbExistsAndUpdateUI();
+      checkForUpdates();
+    }
 
     function applyTranslations() {
       const header = document.getElementById('app-header');
@@ -1417,6 +1423,13 @@
     }
 
     async function unlockVault() {
+      // Wymuszenie pobrania języka z aktualnie aktywnego przycisku w UI
+      const activeBtn = document.querySelector('.lang-btn.active');
+      if (activeBtn && activeBtn.dataset.lang) {
+        currentLanguage = activeBtn.dataset.lang;
+        localStorage.setItem(UI_LANG_KEY, currentLanguage);
+      }
+
       const passInput = document.getElementById('master-pass');
       const passConfirmInput = document.getElementById('master-pass-confirm');
       masterPassword = passInput.value;
@@ -1452,13 +1465,7 @@
         failedAttempts = 0;
         vaultData = decrypted;
 
-        // Synchronizacja języka
-        if (languageChangedBeforeUnlock && languagePendingOnUnlock) {
-          currentLanguage = languagePendingOnUnlock;
-        } else if (vaultData._settings && vaultData._settings.language) {
-          currentLanguage = vaultData._settings.language;
-        }
-
+        // Synchronizacja wybranego języka z bazą
         if (!vaultData._settings) {
           vaultData._settings = {};
         }
