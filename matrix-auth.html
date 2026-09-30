@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MATRIX-AUTH</title>
+  <!-- Skrypt do generowania kodów TOTP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.1.4/otpauth.umd.min.js"></script>
+  <!-- Skrypt do skanowania kodów QR z kamery -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    :root {
+      --bg: #181825;
+      --card-bg: rgba(30, 31, 48, 0.65);
+      --card-hover: rgba(50, 52, 74, 0.8);
+      --header-bg: rgba(12, 12, 20, 0.45);
+      --footer-bg: rgba(12, 12, 20, 0.55);
+      --text: #cdd6f4;
+      --pink: #f38ba8;
+      --green: #a6e3a1;
+      --blue: #89b4fa;
+      --orange: #fab387;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background-color: #050508;
+      color: var(--text);
+    }
+
+    body { display: flex; flex-direction: column; position: relative; }
+
+    #matrix-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    #auth-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 10, 15, 0.92); display: flex; align-items: center; justify-content: center; z-index: 100;
+      backdrop-filter: blur(6px);
+      padding: 15px;
+    }
+
+    .auth-box {
+      background: rgba(30, 30, 46, 0.95); padding: 25px; border-radius: 12px;
+      width: 100%; max-width: 500px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+      max-height: 90vh; overflow-y: auto; border: 1px solid #45475a;
+    }
+
+    .auth-box h2 { color: var(--pink); margin-bottom: 20px; font-size: 1.2rem; }
+
+    .auth-header {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .auth-title-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .auth-title-line h2 {
+      margin: 0;
+      color: var(--pink);
+      font-size: 1.1rem;
+      white-space: nowrap;
+    }
+
+    .auth-title-line span {
+      color: #a6adc8;
+      font-size: 0.9rem;
+    }
+
+    .auth-title-line a {
+      color: var(--blue);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .auth-title-line a:hover {
+      color: var(--green);
+      text-decoration: underline;
+    }
+
+    .lang-selector {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: 2px solid #45475a;
+      border-radius: 6px;
+      padding: 4px 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      opacity: 0.85;
+      min-width: 32px;
+      height: 32px;
+    }
+
+    .lang-btn.active {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 1px rgba(137, 180, 250, 0.4);
+      opacity: 1;
+    }
+
+    .lang-btn:hover {
+      transform: translateY(-1px);
+      opacity: 1;
+    }
+
+    input[type="password"], input[type="text"] {
+      width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px;
+      border: 1px solid #45475a; background: #11111b; color: #fff; font-size: 16px;
+    }
+
+    button {
+      cursor: pointer; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; padding: 12px 20px;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+    button:hover { opacity: 0.9; transform: scale(0.98); }
+
+    .btn-primary { background: var(--blue); color: #11111b; width: 100%; }
+    .btn-add { background: var(--green); color: #11111b; flex: 2; }
+    .btn-disk { background: var(--blue); color: #11111b; padding: 12px 18px; font-size: 1.1rem; }
+    .btn-lock { background: var(--pink); color: #11111b; flex: 1; }
+    .btn-del {
+      background: rgba(243, 139, 168, 0.25); color: var(--pink);
+      border: 1px solid var(--pink); padding: 6px 12px; font-size: 0.8rem;
+    }
+    .btn-del:hover { background: var(--pink); color: #11111b; }
+
+    .btn-show { background: var(--blue); color: #11111b; padding: 8px 14px; font-size: 0.85rem; }
+
+    header {
+      background: var(--header-bg); color: var(--pink); text-align: center;
+      padding: 15px; font-weight: bold; font-family: monospace; font-size: 1.1rem;
+      flex-shrink: 0; box-shadow: 0 2px 12px rgba(0,0,0,0.4); z-index: 10;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+      z-index: 5;
+      scrollbar-width: thin;
+      scrollbar-color: #313244 transparent;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    main::-webkit-scrollbar { width: 4px; }
+    main::-webkit-scrollbar-track { background: transparent; margin: 6px 0; }
+    main::-webkit-scrollbar-thumb { background: #232433; border-radius: 20px; }
+
+    .account-card {
+      background: var(--card-bg); border-radius: 8px; padding: 15px;
+      margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+      transition: all 0.2s ease-in-out; border: 1px solid rgba(255,255,255,0.08); cursor: pointer;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    @media (min-width: 601px) {
+      .account-card:hover {
+        background: var(--card-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      }
+    }
+
+    .account-card.active {
+      border: 1px solid var(--green);
+      background: rgba(35, 45, 55, 0.85);
+    }
+
+    .account-name { font-weight: bold; font-size: 1.1rem; }
+    .card-actions { display: flex; gap: 8px; align-items: center; }
+
+    @media (max-width: 600px) {
+      .account-card { cursor: default; }
+      .btn-show { padding: 10px 16px; font-size: 0.9rem; }
+      .btn-del { padding: 10px 12px; font-size: 0.9rem; }
+    }
+
+    footer {
+      background: var(--footer-bg); padding: 15px; text-align: center;
+      flex-shrink: 0; border-top: 1px solid rgba(255, 255, 255, 0.1); z-index: 10;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .code-display-box {
+      background: rgba(18, 18, 28, 0.65); border-radius: 8px; padding: 10px;
+      margin-bottom: 10px; max-width: 600px; margin-left: auto; margin-right: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1); min-height: 80px; display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .fade-animate {
+      transition: opacity 0.15s ease-in-out;
+      opacity: 1;
+    }
+    .fade-out { opacity: 0; }
+
+    .active-app-title { font-size: 0.85rem; color: var(--blue); text-transform: uppercase; letter-spacing: 1px; }
+    .active-code {
+      font-family: monospace; font-size: 2.2rem; font-weight: bold; color: var(--green);
+      letter-spacing: 4px; margin: 2px 0;
+      text-shadow: 0 0 10px rgba(166, 227, 161, 0.3);
+    }
+    .placeholder-text { color: #89b4fa; font-style: italic; font-size: 0.95rem; }
+
+    .timer-text { color: var(--orange); font-weight: bold; font-size: 0.85rem; }
+    .actions { display: flex; gap: 10px; max-width: 600px; margin: 0 auto; align-items: center; }
+
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 90;
+      padding: 15px;
+      backdrop-filter: blur(5px);
+    }
+
+    .lang-info {
+      font-size: 0.75rem;
+      color: #a6adc8;
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    #qr-reader {
+      width: 100% !important;
+      max-width: 320px;
+      margin: 0 auto 15px auto;
+      border: none !important;
+      min-height: 240px;
+      background-color: #000;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    #qr-reader video {
+      width: 100% !important;
+      height: 240px !important;
+      object-fit: cover !important;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="matrix-canvas"></canvas>
+
+  <div id="auth-overlay">
+    <div class="auth-box">
+      <div class="auth-header">
+        <div class="auth-title-line">
+          <h2 id="auth-title">MATRIX-AUTHENTICATOR</h2>
+          <span>/</span>
+          <a href="#" id="auth-link" target="_blank" rel="noopener noreferrer">GITHUB</a>
+        </div>
+
+        <div class="lang-selector">
+          <button class="lang-btn active" data-lang="en" type="button" title="English" onclick="switchLanguageOnAuthScreen('en')">
+            <svg width="22" height="22" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+              <rect width="60" height="30" fill="#012169"/>
+              <path d="M0,0 L60,30 M60,0 L0,30" stroke="white" stroke-width="6"/>
+              <path d="M30,0 v30 M0,15 h60" stroke="white" stroke-width="4"/>
+              <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="2"/>
+            </svg>
+          </button>
+
+          <button class="lang-btn" data-lang="pl" type="button" title="Polski" onclick="switchLanguageOnAuthScreen('pl')">
+            <svg width="22" height="22" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+              <rect width="60" height="15" fill="white"/>
+              <rect y="15" width="60" height="15" fill="#DC143C"/>
+            </svg>
+          </button>
+
+          <button class="lang-btn" data-lang="de" type="button" title="Deutsch" onclick="switchLanguageOnAuthScreen('de')">
+            <svg width="22" height="22" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+              <rect width="60" height="10" fill="#000"/>
+              <rect y="10" width="60" height="10" fill="#D00"/>
+              <rect y="20" width="60" height="10" fill="#FFCE00"/>
+            </svg>
+          </button>
+
+          <button class="lang-btn" data-lang="cs" type="button" title="Česky" onclick="switchLanguageOnAuthScreen('cs')">
+            <svg width="22" height="22" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+              <rect width="60" height="30" fill="white"/>
+              <path d="M0,0 L30,15 L0,30" fill="#11457E"/>
+              <rect y="0" width="60" height="10" fill="#11457E"/>
+              <rect y="20" width="60" height="10" fill="#D4AF37"/>
+            </svg>
+          </button>
+
+          <button class="lang-btn" data-lang="fr" type="button" title="Français" onclick="switchLanguageOnAuthScreen('fr')">
+            <svg width="22" height="22" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+              <rect width="20" height="30" fill="#002395"/>
+              <rect x="20" width="20" height="30" fill="white"/>
+              <rect x="40" width="20" height="30" fill="#ED2939"/>
+            </svg>
+          </button>
+
+          <button class="lang-btn" data-lang="es" type="button" title="Español" onclick="switchLanguageOnAuthScreen('es')">
+            <svg width="22" height="22" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+              <rect width="60" height="6" fill="#C60B1E"/>
+              <rect y="6" width="60" height="18" fill="#FFC400"/>
+              <rect y="24" width="60" height="6" fill="#C60B1E"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <input type="password" id="master-pass" placeholder="Enter Master Password" onkeydown="if(event.key === 'Enter') unlockVault()">
+      <button id="unlock-btn" class="btn-primary" onclick="unlockVault()">UNLOCK</button>
+      <div class="lang-info" id="lang-info"></div>
+    </div>
+  </div>
+
+  <header id="app-header">MATRIX-AUTH | ver. 1.9.1</header>
+
+  <main id="account-list"></main>
+
+  <footer>
+    <div class="code-display-box">
+      <div id="active-display" class="fade-animate">
+        <div class="placeholder-text" id="placeholder-text">Select an app from the list to view code</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="add-btn" class="btn-add" onclick="showAddModal()">+ ADD APP</button>
+      <button id="backup-btn" class="btn-disk" title="Export / Import database" onclick="showBackupModal()">💾</button>
+      <button id="lock-btn" class="btn-lock" onclick="lockVault()">CLOSE</button>
+    </div>
+  </footer>
+
+  <div id="add-modal" class="modal-overlay">
+    <div class="auth-box">
+      <h3 id="add-modal-title" style="margin-bottom: 15px; color: var(--blue);">Add New App</h3>
+      
+      <button id="scan-qr-btn" class="btn-primary" style="background: var(--orange); margin-bottom: 15px;" onclick="startQRScanner()">📷 SCAN QR CODE (hosted/online only)</button>
+      
+      <div id="qr-reader" style="display: none;"></div>
+
+      <input type="text" id="new-name" placeholder="Name (e.g., GitHub)" onkeydown="if(event.key === 'Enter') saveNewAccount()">
+      <input type="text" id="new-secret" placeholder="Secret Key (Base32)" onkeydown="if(event.key === 'Enter') saveNewAccount()">
+      <div style="display: flex; gap: 10px;">
+        <button id="save-btn" class="btn-primary" onclick="saveNewAccount()">SAVE</button>
+        <button id="add-modal-cancel" style="background: #45475a; color: #fff; width: 100%;" onclick="hideAddModal()">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="backup-modal" class="modal-overlay">
+    <div class="auth-box">
+      <h3 id="backup-title" style="margin-bottom: 15px; color: var(--blue);">Database Backup</h3>
+      <p id="backup-desc" style="font-size: 0.85rem; color: #a6adc8; margin-bottom: 20px;">
+        You can save the encrypted database to a file, share it via email, or import an existing backup.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button id="export-btn" class="btn-add" style="width: 100%;" onclick="exportVault()">EXPORT (Save vault.enc)</button>
+        <button id="share-btn" class="btn-primary" style="width: 100%; background: var(--orange);" onclick="shareVault()">EMAIL / SHARE (Send vault.enc)</button>
+        <button id="import-btn" class="btn-disk" style="width: 100%;" onclick="showImportPasswordModal()">IMPORT (Select file)</button>
+        <button id="backup-close-btn" style="background: #45475a; color: #fff; width: 100%; margin-top: 10px;" onclick="hideBackupModal()">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="import-pass-modal" class="modal-overlay">
+    <div class="auth-box">
+      <h3 id="import-pass-title" style="margin-bottom: 10px; color: var(--pink);">Decrypt Database</h3>
+      <p id="import-pass-desc" style="font-size: 0.85rem; color: #a6adc8; margin-bottom: 15px;">
+        Enter the Master Password used to encrypt the file:
+      </p>
+      <input type="password" id="import-pass-input" placeholder="Master Password for file" onkeydown="if(event.key === 'Enter') triggerFileSelect()">
+      <div style="display: flex; gap: 10px;">
+        <button id="select-file-btn" class="btn-primary" onclick="triggerFileSelect()">SELECT FILE</button>
+        <button id="import-close-btn" style="background: #45475a; color: #fff; width: 100%;" onclick="hideImportPasswordModal()">CANCEL</button>
+      </div>
+      <input type="file" id="import-file-input" style="display: none;" accept=".enc,.json" onchange="handleFileSelect(event)">
+    </div>
+  </div>
+
+  <script>
+    let vaultData = {};
+    let masterPassword = "";
+    let selectedApp = null;
+    let failedAttempts = 0;
+    let languageChangedBeforeUnlock = false;
+    let html5QrCode = null;
+    const DB_KEY = "matrix_vault_enc";
+    const GITHUB_LINK = "https://github.com/spazma/matrix-authenticator";
+
+    const translations = {
+      en: {
+        header: "MATRIX-AUTH | ver. 1.9.1",
+        mainTitle: "MATRIX-AUTHENTICATOR",
+        masterPassPlaceholder: "Enter Master Password",
+        unlockBtn: "UNLOCK",
+        selectAppPlaceholder: "Select an app from the list to view code",
+        showCodeBtn: "SHOW CODE",
+        deleteBtn: "X",
+        addAppBtn: "+ ADD APP",
+        backupBtn: "💾",
+        lockBtn: "CLOSE",
+        addAppTitle: "Add New App",
+        appNamePlaceholder: "Name (e.g., GitHub)",
+        secretPlaceholder: "Secret Key (Base32)",
+        saveBtn: "SAVE",
+        cancelBtn: "CANCEL",
+        backupTitle: "Database Backup",
+        backupDesc: "You can save the encrypted database to a file, share it via email, or import an existing backup.",
+        exportBtn: "EXPORT (Save vault.enc)",
+        shareBtn: "EMAIL / SHARE (Send vault.enc)",
+        importBtn: "IMPORT (Select file)",
+        closeBtn: "CLOSE",
+        importPassTitle: "Decrypt Database",
+        importPassDesc: "Enter the Master Password used to encrypt the file:",
+        importPassPlaceholder: "Master Password for file",
+        selectFileBtn: "SELECT FILE",
+        scanQrBtn: "📷 SCAN QR CODE (hosted/online only)",
+        wrongPassword: "Wrong Master Password!",
+        failedAttempts: "You failed twice — are you really the one?",
+        codeChangeIn: "CODE CHANGES IN:",
+        deleteConfirm: "Delete",
+        deleteSuccess: "Account deleted successfully!",
+        importSuccess: "Database restored successfully from file!",
+        importError: "Import error! Wrong Master Password or corrupted file.",
+        defaultPlaceholder: "Select an app from the list to view code",
+        langInfo: "Language will be saved to vault after unlock",
+        qrError: "Camera access failed or invalid QR code format.",
+        qrLocalWarning: "📷 QR Scanner works only in online mode (HTTPS / GitHub Pages)!\n\nOpening the file directly from disk blocks camera access on mobile devices."
+      },
+      pl: {
+        header: "MATRIX-AUTH | wer. 1.9.1",
+        mainTitle: "MATRIX-AUTHENTICATOR",
+        masterPassPlaceholder: "Podaj Hasło Główne",
+        unlockBtn: "ODBLOKUJ",
+        selectAppPlaceholder: "Wybierz aplikację z listy, aby zobaczyć kod",
+        showCodeBtn: "POKAŻ KOD",
+        deleteBtn: "X",
+        addAppBtn: "+ DODAJ APKĘ",
+        backupBtn: "💾",
+        lockBtn: "ZAMKNIJ",
+        addAppTitle: "Dodaj nową aplikację",
+        appNamePlaceholder: "Nazwa (np. GitHub)",
+        secretPlaceholder: "Tajny klucz (Secret Base32)",
+        saveBtn: "ZAPISZ",
+        cancelBtn: "ANULUJ",
+        backupTitle: "Kopia Bazy Danych",
+        backupDesc: "Możesz zapisać zaszyfrowaną bazę, wysłać ją e-mailem lub wgrać kopię zapasową.",
+        exportBtn: "EXPORT (Zapisz plik vault.enc)",
+        shareBtn: "E-MAIL / UDOSTĘPNIJ (Wyślij vault.enc)",
+        importBtn: "IMPORT (Wybierz plik z dysku)",
+        closeBtn: "ZAMKNIJ",
+        importPassTitle: "Odszyfrowanie Bazy",
+        importPassDesc: "Podaj Hasło Główne, którym został zaszyfrowany wgrywany plik:",
+        importPassPlaceholder: "Hasło Główne do pliku",
+        selectFileBtn: "WYBIERZ PLIK",
+        scanQrBtn: "📷 SKANUJ KOD QR (tylko online / hosted)",
+        wrongPassword: "Błędne Hasło Główne!",
+        failedAttempts: "Pomyliłeś się dwa razy — czy to na pewno Ty?",
+        codeChangeIn: "ZMIANA KODU ZA:",
+        deleteConfirm: "Usunąć",
+        deleteSuccess: "Konto usunięte pomyślnie!",
+        importSuccess: "Baza danych została pomyślnie przywrócona z pliku!",
+        importError: "Błąd importu! Podano złe Hasło Główne do pliku lub plik jest uszkodzony.",
+        defaultPlaceholder: "Wybierz aplikację z listy, aby zobaczyć kod",
+        langInfo: "Wybór języka zostanie zapisany w bazie po odblokowaniu",
+        qrError: "Brak dostępu do kamery lub nieprawidłowy kod QR.",
+        qrLocalWarning: "📷 Skaner QR działa tylko w wersji online (HTTPS / GitHub Pages)!\n\nOtwieranie pliku bezpośrednio z dysku blokuje kamerę w przeglądarkach mobilnych."
+      },
+      de: {
+        header: "MATRIX-AUTH | v. 1.9.1",
+        mainTitle: "MATRIX-AUTHENTICATOR",
+        masterPassPlaceholder: "Hauptpasswort eingeben",
+        unlockBtn: "ENTSPERREN",
+        selectAppPlaceholder: "Wählen Sie eine App aus der Liste",
+        showCodeBtn: "CODE ANZEIGEN",
+        deleteBtn: "X",
+        addAppBtn: "+ APP HINZUFÜGEN",
+        backupBtn: "💾",
+        lockBtn: "SCHLIESSEN",
+        addAppTitle: "Neue App hinzufügen",
+        appNamePlaceholder: "Name (z.B. GitHub)",
+        secretPlaceholder: "Geheimer Schlüssel (Base32)",
+        saveBtn: "SPEICHERN",
+        cancelBtn: "ABBRECHEN",
+        backupTitle: "Datenbank-Sicherung",
+        backupDesc: "Speichern Sie Ihre verschlüsselte Datenbank, teilen Sie sie per E-Mail oder stellen Sie sie wieder her.",
+        exportBtn: "EXPORT (vault.enc speichern)",
+        shareBtn: "E-MAIL / TEILEN (vault.enc senden)",
+        importBtn: "IMPORT (Datei auswählen)",
+        closeBtn: "SCHLIESSEN",
+        importPassTitle: "Datenbank entschlüsseln",
+        importPassDesc: "Geben Sie das Hauptpasswort ein, das zum Verschlüsseln der Datei verwendet wurde:",
+        importPassPlaceholder: "Hauptpasswort für Datei",
+        selectFileBtn: "DATEI WÄHLEN",
+        scanQrBtn: "📷 QR-CODE SCANNEN (nur online / hosted)",
+        wrongPassword: "Falsches Hauptpasswort!",
+        failedAttempts: "Sie haben zweimal versagt — sind Sie wirklich die richtige Person?",
+        codeChangeIn: "CODE ÄNDERT SICH IN:",
+        deleteConfirm: "Löschen",
+        deleteSuccess: "Konto erfolgreich gelöscht!",
+        importSuccess: "Datenbank erfolgreich aus Datei wiederhergestellt!",
+        importError: "Importfehler! Falsches Hauptpasswort oder beschädigte Datei.",
+        defaultPlaceholder: "Wählen Sie eine App aus der Liste",
+        langInfo: "Die Sprachauswahl wird nach dem Entsperren gespeichert",
+        qrError: "Kamera-Zugriff fehlgeschlagen oder ungültiger QR-Code.",
+        qrLocalWarning: "📷 Der QR-Scanner funktioniert nur im Online-Modus (HTTPS / GitHub Pages)!\n\nDas direkte Öffnen der Datei vom Datenträger blockiert den Kamerazugriff auf Mobilgeräten."
+      },
+      cs: {
+        header: "MATRIX-AUTH | v. 1.9.1",
+        mainTitle: "MATRIX-AUTHENTICATOR",
+        masterPassPlaceholder: "Zadejte hlavní heslo",
+        unlockBtn: "ODEMKNOUT",
+        selectAppPlaceholder: "Vyberte aplikaci ze seznamu",
+        showCodeBtn: "ZOBRAZIT KÓD",
+        deleteBtn: "X",
+        addAppBtn: "+ PŘIDAT APLIKACI",
+        backupBtn: "💾",
+        lockBtn: "ZAVŘÍT",
+        addAppTitle: "Přidat novou aplikaci",
+        appNamePlaceholder: "Název (např. GitHub)",
+        secretPlaceholder: "Tajný klíč (Base32)",
+        saveBtn: "ULOŽIT",
+        cancelBtn: "ZRUŠIT",
+        backupTitle: "Zálohování databáze",
+        backupDesc: "Můžete uložit zašifrovanou databázi, sdílet ji e-mailem nebo importovat zálohu.",
+        exportBtn: "EXPORT (Uložit vault.enc)",
+        shareBtn: "E-MAIL / SDÍLET (Odeslat vault.enc)",
+        importBtn: "IMPORT (Vybrat soubor)",
+        closeBtn: "ZAVŘÍT",
+        importPassTitle: "Dešifrování databáze",
+        importPassDesc: "Zadejte hlavní heslo, které bylo použito k zašifrování souboru:",
+        importPassPlaceholder: "Hlavní heslo pro soubor",
+        selectFileBtn: "VYBRAT SOUBOR",
+        scanQrBtn: "📷 SKENOVAT QR KÓD (pouze online / hosted)",
+        wrongPassword: "Špatné hlavní heslo!",
+        failedAttempts: "Chyboval jsi dvakrát — jsi opravdu ty?",
+        codeChangeIn: "KÓD SE ZMĚNÍ ZA:",
+        deleteConfirm: "Smazat",
+        deleteSuccess: "Účet úspěšně smazán!",
+        importSuccess: "Databáze úspěšně obnovena ze souboru!",
+        importError: "Chyba importu! Špatné hlavní heslo nebo poškozený soubor.",
+        defaultPlaceholder: "Vyberte aplikaci ze seznamu",
+        langInfo: "Výběr jazyka bude uložen do trezoru po odemknutí",
+        qrError: "Přístup ke kameře selhal nebo neplatný kód QR.",
+        qrLocalWarning: "📷 QR skener funguje pouze v režimu online (HTTPS / GitHub Pages)!\n\nPřímé otevření souboru z disku blokuje přístup ke kameře na mobilních zařízeních."
+      },
+      es: {
+        header: "MATRIX-AUTH | ver. 1.9.1",
+        mainTitle: "MATRIX-AUTHENTICATOR",
+        masterPassPlaceholder: "Introduce la contraseña maestra",
+        unlockBtn: "DESBLOQUEAR",
+        selectAppPlaceholder: "Selecciona una aplicación de la lista para ver el código",
+        showCodeBtn: "MOSTRAR CÓDIGO",
+        deleteBtn: "X",
+        addAppBtn: "+ AÑADIR APP",
+        backupBtn: "💾",
+        lockBtn: "CERRAR",
+        addAppTitle: "Añadir nueva aplicación",
+        appNamePlaceholder: "Nombre (ej. GitHub)",
+        secretPlaceholder: "Clave secreta (Base32)",
+        saveBtn: "GUARDAR",
+        cancelBtn: "CANCELAR",
+        backupTitle: "Copia de seguridad de la base de datos",
+        backupDesc: "Puedes guardar la base de datos cifrada, enviarla por correo o importar una copia.",
+        exportBtn: "EXPORTAR (Guardar vault.enc)",
+        shareBtn: "CORREO / COMPARTIR (Enviar vault.enc)",
+        importBtn: "IMPORTAR (Seleccionar archivo)",
+        closeBtn: "CERRAR",
+        importPassTitle: "Descifrar base de datos",
+        importPassDesc: "Introduce la contraseña maestra usada para cifrar el archivo:",
+        importPassPlaceholder: "Contraseña maestra del archivo",
+        selectFileBtn: "SELECCIONAR ARCHIVO",
+        scanQrBtn: "📷 ESCANEAR CÓDIGO QR (solo online / hosted)",
+        wrongPassword: "¡Contraseña maestra incorrecta!",
+        failedAttempts: "Has fallado dos veces — ¿eres realmente tú?",
+        codeChangeIn: "EL CÓDIGO CAMBIA EN:",
+        deleteConfirm: "Eliminar",
+        deleteSuccess: "¡Cuenta eliminada correctamente!",
+        importSuccess: "¡Base de datos restaurada correctamente desde el archivo!",
+        importError: "¡Error de importación! Contraseña incorrecta o archivo dañado.",
+        defaultPlaceholder: "Selecciona una aplicación de la lista para ver el código",
+        langInfo: "El idioma se guardará en el almacén después de desbloquear",
+        qrError: "Error al acceder a la cámara o formato QR no válido.",
+        qrLocalWarning: "📷 ¡El escáner QR solo funciona en modo en línea (HTTPS / GitHub Pages)!\n\nAbrir el archivo directamente desde el disco bloquea el acceso a la cámara en dispositivos móviles."
+      },
+      fr: {
+        header: "MATRIX-AUTH | v. 1.9.1",
+        mainTitle: "MATRIX-AUTHENTICATOR",
+        masterPassPlaceholder: "Entrez le mot de passe principal",
+        unlockBtn: "DÉVERROUILLER",
+        selectAppPlaceholder: "Sélectionnez une application de la liste",
+        showCodeBtn: "AFFICHER LE CODE",
+        deleteBtn: "X",
+        addAppBtn: "+ AJOUTER APPLICATION",
+        backupBtn: "💾",
+        lockBtn: "FERMER",
+        addAppTitle: "Ajouter une nouvelle application",
+        appNamePlaceholder: "Nom (ex. GitHub)",
+        secretPlaceholder: "Clé secrète (Base32)",
+        saveBtn: "ENREGISTRER",
+        cancelBtn: "ANNULER",
+        backupTitle: "Sauvegarde de la base de données",
+        backupDesc: "Vous pouvez enregistrer la base de données chiffrée, la partager par email ou importer une sauvegarde.",
+        exportBtn: "EXPORT (Enregistrer vault.enc)",
+        shareBtn: "EMAIL / PARTAGER (Envoyer vault.enc)",
+        importBtn: "IMPORT (Sélectionner un fichier)",
+        closeBtn: "FERMER",
+        importPassTitle: "Déchiffrer la base de données",
+        importPassDesc: "Entrez le mot de passe principal utilisé pour chiffrer le fichier:",
+        importPassPlaceholder: "Mot de passe principal pour le fichier",
+        selectFileBtn: "SÉLECTIONNER FICHIER",
+        scanQrBtn: "📷 SCANNER CÓDE QR (en ligne / hosted uniquement)",
+        wrongPassword: "Mot de passe principal incorrect!",
+        failedAttempts: "Vous avez échoué deux fois — êtes-vous vraiment vous?",
+        codeChangeIn: "LE CODE CHANGE DANS:",
+        deleteConfirm: "Supprimer",
+        deleteSuccess: "Compte supprimé avec succès!",
+        importSuccess: "Base de données restaurée avec succès à partir du fichier!",
+        importError: "Erreur d'importation! Mot de passe principal incorrect ou fichier corrompu.",
+        defaultPlaceholder: "Sélectionnez une application de la liste",
+        langInfo: "La sélection de la langue sera enregistrée dans le coffre-fort après déverrouillage",
+        qrError: "Accès à la caméra échoué ou format QR invalide.",
+        qrLocalWarning: "📷 Le scanner QR ne fonctionne qu'en mode en ligne (HTTPS / GitHub Pages)!\n\nL'ouverture directe du fichier depuis le disque bloque l'accès à la caméra sur les appareils mobiles."
+      }
+    };
+
+    let currentLanguage = "en";
+    let browserLanguage = "en";
+    let languagePendingOnUnlock = null;
+
+    function t(key) {
+      return (translations[currentLanguage] && translations[currentLanguage][key]) || translations.en[key] || key;
+    }
+
+    function detectBrowserLanguage() {
+      const supportedLangs = ['en', 'pl', 'de', 'cs', 'fr', 'es'];
+      const browserLang = navigator.language || navigator.userLanguage;
+      const lang = browserLang.split('-')[0].toLowerCase();
+      return supportedLangs.includes(lang) ? lang : 'en';
+    }
+
+    function switchLanguageOnAuthScreen(lang) {
+      currentLanguage = lang;
+      languagePendingOnUnlock = lang;
+      languageChangedBeforeUnlock = true;
+
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+
+      document.getElementById('auth-title').textContent = t('mainTitle');
+      document.getElementById('master-pass').placeholder = t('masterPassPlaceholder');
+      document.getElementById('unlock-btn').textContent = t('unlockBtn');
+      updateLangInfo();
+    }
+
+    function switchLanguage(lang) {
+      currentLanguage = lang;
+      languagePendingOnUnlock = null;
+      languageChangedBeforeUnlock = false;
+
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+
+      if (masterPassword && vaultData) {
+        setLanguageInVault(lang);
+        saveVault();
+      }
+
+      applyTranslations();
+      updateCodeDisplay(true);
+    }
+
+    function updateLangInfo() {
+      const langInfo = document.getElementById('lang-info');
+      if (langInfo) {
+        if (languageChangedBeforeUnlock) {
+          langInfo.textContent = t('langInfo');
+          langInfo.style.color = 'var(--green)';
+        } else {
+          langInfo.textContent = '';
+        }
+      }
+    }
+
+    function getLanguageFromVault() {
+      if (!vaultData || !vaultData._settings || !vaultData._settings.language) {
+        return browserLanguage;
+      }
+      return vaultData._settings.language;
+    }
+
+    function setLanguageInVault(lang) {
+      if (!vaultData._settings) {
+        vaultData._settings = {};
+      }
+      vaultData._settings.language = lang;
+    }
+
+    function initializeLanguageOnAuthScreen() {
+      browserLanguage = detectBrowserLanguage();
+      currentLanguage = browserLanguage;
+      languagePendingOnUnlock = null;
+      languageChangedBeforeUnlock = false;
+
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === browserLanguage);
+      });
+
+      applyTranslations();
+      updateLangInfo();
+    }
+
+    function applyTranslations() {
+      const header = document.getElementById('app-header');
+      const authTitle = document.getElementById('auth-title');
+      const authLink = document.getElementById('auth-link');
+      const masterPass = document.getElementById('master-pass');
+      const unlockBtn = document.getElementById('unlock-btn');
+      const addBtn = document.getElementById('add-btn');
+      const lockBtn = document.getElementById('lock-btn');
+      const placeholderText = document.getElementById('placeholder-text');
+      const addTitle = document.getElementById('add-modal-title');
+      const newName = document.getElementById('new-name');
+      const newSecret = document.getElementById('new-secret');
+      const saveBtn = document.getElementById('save-btn');
+      const addCancel = document.getElementById('add-modal-cancel');
+      const backupTitle = document.getElementById('backup-title');
+      const backupDesc = document.getElementById('backup-desc');
+      const exportBtn = document.getElementById('export-btn');
+      const shareBtn = document.getElementById('share-btn');
+      const importBtn = document.getElementById('import-btn');
+      const backupClose = document.getElementById('backup-close-btn');
+      const importPassTitle = document.getElementById('import-pass-title');
+      const importPassDesc = document.getElementById('import-pass-desc');
+      const importPassInput = document.getElementById('import-pass-input');
+      const selectFileBtn = document.getElementById('select-file-btn');
+      const importCloseBtn = document.getElementById('import-close-btn');
+      const scanQrBtn = document.getElementById('scan-qr-btn');
+
+      if (header) header.textContent = t('header');
+      if (authTitle) authTitle.textContent = t('mainTitle');
+      if (authLink) authLink.textContent = "GITHUB";
+      if (authLink) authLink.href = GITHUB_LINK;
+      if (masterPass) masterPass.placeholder = t('masterPassPlaceholder');
+      if (unlockBtn) unlockBtn.textContent = t('unlockBtn');
+      if (addBtn) addBtn.textContent = t('addAppBtn');
+      if (lockBtn) lockBtn.textContent = t('lockBtn');
+      if (placeholderText) placeholderText.textContent = t('defaultPlaceholder');
+      if (addTitle) addTitle.textContent = t('addAppTitle');
+      if (newName) newName.placeholder = t('appNamePlaceholder');
+      if (newSecret) newSecret.placeholder = t('secretPlaceholder');
+      if (saveBtn) saveBtn.textContent = t('saveBtn');
+      if (addCancel) addCancel.textContent = t('cancelBtn');
+      if (backupTitle) backupTitle.textContent = t('backupTitle');
+      if (backupDesc) backupDesc.textContent = t('backupDesc');
+      if (exportBtn) exportBtn.textContent = t('exportBtn');
+      if (shareBtn) shareBtn.textContent = t('shareBtn');
+      if (importBtn) importBtn.textContent = t('importBtn');
+      if (backupClose) backupClose.textContent = t('closeBtn');
+      if (importPassTitle) importPassTitle.textContent = t('importPassTitle');
+      if (importPassDesc) importPassDesc.textContent = t('importPassDesc');
+      if (importPassInput) importPassInput.placeholder = t('importPassPlaceholder');
+      if (selectFileBtn) selectFileBtn.textContent = t('selectFileBtn');
+      if (importCloseBtn) importCloseBtn.textContent = t('cancelBtn');
+      if (scanQrBtn) scanQrBtn.textContent = t('scanQrBtn');
+
+      updateCodeDisplay(true);
+      renderUI();
+    }
+
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+    const letters = '0123456789ABCDEFABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const fontSize = 14;
+    let columns = 0;
+    let drops = [];
+    let matrixInterval = null;
+
+    function resizeCanvas() {
+      if (!canvas) return;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      columns = Math.floor(canvas.width / fontSize);
+      drops = [];
+      for (let i = 0; i < columns; i++) {
+        drops[i] = Math.floor(Math.random() * -100);
+      }
+    }
+
+    function drawMatrix() {
+      if (!ctx) return;
+      ctx.fillStyle = 'rgba(5, 5, 8, 0.08)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0f0';
+      ctx.font = fontSize + 'px monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    function startMatrix() {
+      resizeCanvas();
+      if (matrixInterval) clearInterval(matrixInterval);
+      matrixInterval = setInterval(drawMatrix, 33);
+    }
+
+    function isMobileScreen() {
+      return window.innerWidth <= 600;
+    }
+
+    async function getKey(password, salt) {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey(
+        "raw", enc.encode(password), { name: "PBKDF2" }, false, ["deriveKey"]
+      );
+      return crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" },
+        keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+      );
+    }
+
+    async function encryptData(dataObj, password) {
+      const enc = new TextEncoder();
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const key = await getKey(password, salt);
+
+      const encrypted = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv }, key, enc.encode(JSON.stringify(dataObj))
+      );
+
+      return JSON.stringify({
+        salt: Array.from(salt),
+        iv: Array.from(iv),
+        data: Array.from(new Uint8Array(encrypted))
+      });
+    }
+
+    async function decryptData(cipherJsonStr, password) {
+      try {
+        const payload = JSON.parse(cipherJsonStr);
+        const salt = new Uint8Array(payload.salt);
+        const iv = new Uint8Array(payload.iv);
+        const data = new Uint8Array(payload.data);
+        const key = await getKey(password, salt);
+
+        const decrypted = await crypto.subtle.decrypt(
+          { name: "AES-GCM", iv: iv }, key, data
+        );
+        return JSON.parse(new TextDecoder().decode(decrypted));
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function unlockVault() {
+      const passInput = document.getElementById('master-pass');
+      masterPassword = passInput.value;
+      if (!masterPassword) return;
+
+      const encryptedRaw = localStorage.getItem(DB_KEY);
+
+      if (!encryptedRaw) {
+        vaultData = { _settings: { language: currentLanguage } };
+        await saveVault();
+        document.getElementById('auth-overlay').style.display = 'none';
+        passInput.value = "";
+        renderUI();
+        applyTranslations();
+        updateLangInfo();
+        return;
+      }
+
+      const decrypted = await decryptData(encryptedRaw, masterPassword);
+
+      if (decrypted !== null) {
+        failedAttempts = 0;
+        vaultData = decrypted;
+
+        if (!vaultData._settings) {
+          vaultData._settings = { language: browserLanguage };
+        }
+
+        if (languageChangedBeforeUnlock && languagePendingOnUnlock) {
+          vaultData._settings.language = languagePendingOnUnlock;
+          await saveVault();
+        }
+
+        currentLanguage = getLanguageFromVault();
+        languagePendingOnUnlock = null;
+        languageChangedBeforeUnlock = false;
+
+        document.getElementById('auth-overlay').style.display = 'none';
+        passInput.value = "";
+        renderUI();
+        applyTranslations();
+        updateLangInfo();
+      } else {
+        failedAttempts++;
+
+        if (failedAttempts >= 2) {
+          alert(t('failedAttempts'));
+
+          vaultData = {
+            _settings: { language: currentLanguage },
+            "Poczta Onet": "JBSWY3DPEHPK3PXP",
+            "Konto Testowe": "KZXW633PN5XW653B"
+          };
+
+          masterPassword = "password123";
+          await saveVault();
+
+          failedAttempts = 0;
+          languagePendingOnUnlock = null;
+          languageChangedBeforeUnlock = false;
+          document.getElementById('auth-overlay').style.display = 'none';
+          passInput.value = "";
+          renderUI();
+          applyTranslations();
+          updateLangInfo();
+        } else {
+          alert(t('wrongPassword'));
+        }
+      }
+    }
+
+    async function saveVault() {
+      const enc = await encryptData(vaultData, masterPassword);
+      localStorage.setItem(DB_KEY, enc);
+    }
+
+    function lockVault() {
+      stopQRScanner();
+      vaultData = {};
+      masterPassword = "";
+      selectedApp = null;
+      failedAttempts = 0;
+      languagePendingOnUnlock = null;
+      languageChangedBeforeUnlock = false;
+
+      document.getElementById('auth-overlay').style.display = 'flex';
+      initializeLanguageOnAuthScreen();
+      updateCodeDisplay(true);
+    }
+
+    function selectApp(name) {
+      selectedApp = name;
+      renderUI();
+    }
+
+    function renderUI() {
+      const list = document.getElementById('account-list');
+      if (!list) return;
+
+      list.innerHTML = "";
+      const isMobile = isMobileScreen();
+
+      for (const [name, secret] of Object.entries(vaultData)) {
+        if (name === "_settings") continue;
+
+        const card = document.createElement('div');
+        const isActive = (selectedApp === name);
+        card.className = `account-card ${isActive ? 'active' : ''}`;
+
+        if (!isMobile) {
+          card.onclick = () => selectApp(name);
+        }
+
+        card.innerHTML = `
+          <div class="account-name">${name}</div>
+          <div class="card-actions">
+            <button class="btn-show" onclick="event.stopPropagation(); selectApp('${name}')">${t('showCodeBtn')}</button>
+            <button class="btn-del" onclick="event.stopPropagation(); deleteAccount('${name}')">${t('deleteBtn')}</button>
+          </div>
+        `;
+        list.appendChild(card);
+      }
+
+      updateCodeDisplay();
+    }
+
+    let lastRenderedCode = "";
+
+    function updateCodeDisplay(forceInstant = false) {
+      const display = document.getElementById('active-display');
+
+      if (!selectedApp || !vaultData[selectedApp]) {
+        if (display) {
+          display.innerHTML = `<div class="placeholder-text">${t('defaultPlaceholder')}</div>`;
+        }
+        lastRenderedCode = "";
+        return;
+      }
+
+      const secret = vaultData[selectedApp];
+      const now = Math.floor(Date.now() / 1000);
+      const remaining = 30 - (now % 30);
+      let code = "ERROR";
+
+      try {
+        let totp = new OTPAuth.TOTP({ secret: OTPAuth.Secret.fromBase32(secret.replace(/\s+/g, '')) });
+        code = totp.generate();
+      } catch (e) {}
+
+      const newHtml = `
+        <div class="active-app-title">${selectedApp}</div>
+        <div class="active-code">${code}</div>
+        <div class="timer-text">${t('codeChangeIn')} ${remaining}s</div>
+      `;
+
+      if (display) {
+        if (!forceInstant && lastRenderedCode !== code) {
+          display.classList.add('fade-out');
+          setTimeout(() => {
+            display.innerHTML = newHtml;
+            display.classList.remove('fade-out');
+          }, 150);
+        } else {
+          display.innerHTML = newHtml;
+        }
+      }
+
+      lastRenderedCode = code;
+    }
+
+    async function saveNewAccount() {
+      const name = document.getElementById('new-name').value.trim();
+      const secret = document.getElementById('new-secret').value.trim();
+
+      if (name && secret) {
+        vaultData[name] = secret;
+        await saveVault();
+        selectedApp = name;
+        hideAddModal();
+        renderUI();
+      }
+    }
+
+    async function deleteAccount(name) {
+      if (confirm(`${t('deleteConfirm')} ${name}?`)) {
+        delete vaultData[name];
+        if (selectedApp === name) selectedApp = null;
+        await saveVault();
+        renderUI();
+      }
+    }
+
+    async function exportVault() {
+      const encryptedData = await encryptData(vaultData, masterPassword);
+      const blob = new Blob([encryptedData], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "vault.enc";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      hideBackupModal();
+    }
+
+    async function shareVault() {
+      try {
+        const encryptedData = await encryptData(vaultData, masterPassword);
+        const file = new File([encryptedData], "vault.enc", { type: "application/json" });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Matrix Vault Backup',
+            text: 'Encrypted backup file for Matrix Authenticator',
+            files: [file]
+          });
+          hideBackupModal();
+        } else {
+          exportVault();
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          exportVault();
+        }
+      }
+    }
+
+    function showImportPasswordModal() {
+      document.getElementById('import-pass-modal').style.display = 'flex';
+      document.getElementById('import-pass-input').value = "";
+    }
+
+    function hideImportPasswordModal() {
+      document.getElementById('import-pass-modal').style.display = 'none';
+    }
+
+    function triggerFileSelect() {
+      const pass = document.getElementById('import-pass-input').value;
+      if (!pass) {
+        alert(t('wrongPassword'));
+        return;
+      }
+      document.getElementById('import-file-input').click();
+    }
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      const targetPass = document.getElementById('import-pass-input').value;
+      if (!file || !targetPass) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const content = e.target.result;
+        const decrypted = await decryptData(content, targetPass);
+
+        if (decrypted !== null) {
+          vaultData = decrypted;
+
+          if (!vaultData._settings) {
+            vaultData._settings = { language: currentLanguage };
+          }
+
+          masterPassword = targetPass;
+          currentLanguage = getLanguageFromVault();
+          await saveVault();
+          selectedApp = null;
+
+          hideImportPasswordModal();
+          hideBackupModal();
+          renderUI();
+          applyTranslations();
+          alert(t('importSuccess'));
+        } else {
+          alert(t('importError'));
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    }
+
+    async function startQRScanner() {
+      const qrReaderContainer = document.getElementById('qr-reader');
+      qrReaderContainer.style.display = 'block';
+
+      if (!window.isSecureContext && location.protocol === 'file:') {
+        alert(t('qrLocalWarning'));
+        stopQRScanner();
+        return;
+      }
+
+      if (html5QrCode) {
+        await stopQRScanner();
+      }
+
+      try {
+        html5QrCode = new Html5Qrcode("qr-reader", { useBarCodeDetectorIfSupported: false });
+        const config = { fps: 10, qrbox: { width: 200, height: 200 } };
+
+        const devices = await Html5Qrcode.getCameras();
+
+        if (devices && devices.length > 0) {
+          let backCamera = devices.find(device => 
+            /back|rear|environment|tył|tylna/i.test(device.label)
+          );
+          const cameraId = backCamera ? backCamera.id : devices[devices.length - 1].id;
+
+          await html5QrCode.start(
+            cameraId,
+            config,
+            onScanSuccess,
+            () => {}
+          );
+        } else {
+          await html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            onScanSuccess,
+            () => {}
+          );
+        }
+
+        setTimeout(() => {
+          const videoElement = qrReaderContainer.querySelector('video');
+          if (videoElement) {
+            videoElement.setAttribute('playsinline', 'true');
+            videoElement.setAttribute('webkit-playsinline', 'true');
+            videoElement.muted = true;
+            videoElement.play().catch(e => console.log(e));
+          }
+        }, 300);
+
+      } catch (err) {
+        console.error("Błąd skanera:", err);
+        alert(t('qrError'));
+        stopQRScanner();
+      }
+    }
+
+    function stopQRScanner() {
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => {
+          document.getElementById('qr-reader').style.display = 'none';
+        }).catch(err => console.error(err));
+      } else {
+        document.getElementById('qr-reader').style.display = 'none';
+      }
+    }
+
+    function onScanSuccess(decodedText) {
+      stopQRScanner();
+      try {
+        if (decodedText.startsWith("otpauth://")) {
+          const parsed = OTPAuth.URI.parse(decodedText);
+          if (parsed && parsed.secret) {
+            document.getElementById('new-name').value = parsed.label || parsed.issuer || "App";
+            document.getElementById('new-secret').value = parsed.secret.base32;
+            return;
+          }
+        }
+        document.getElementById('new-secret').value = decodedText.trim();
+      } catch (e) {
+        document.getElementById('new-secret').value = decodedText.trim();
+      }
+    }
+
+    function showAddModal() { document.getElementById('add-modal').style.display = 'flex'; }
+    function hideAddModal() {
+      stopQRScanner();
+      document.getElementById('add-modal').style.display = 'none';
+      document.getElementById('new-name').value = "";
+      document.getElementById('new-secret').value = "";
+    }
+
+    function showBackupModal() { document.getElementById('backup-modal').style.display = 'flex'; }
+    function hideBackupModal() { document.getElementById('backup-modal').style.display = 'none'; }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      startMatrix();
+      initializeLanguageOnAuthScreen();
+    });
+
+    setInterval(() => {
+      if (masterPassword && selectedApp) updateCodeDisplay();
+    }, 1000);
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      if (masterPassword) renderUI();
+    });
+  </script>
+</body>
+</html>
