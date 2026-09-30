@@ -12,6 +12,7 @@ Simple, secure, single-file TOTP authenticator.
 * **Backup & Export Options:** 
   * Full support for importing and exporting encrypted `.enc` database files.
   * Direct "Send via Email" backup option for quick off-device saving (generates/downloads a formatted email backup file on desktop or opens your mail app on mobile).
+* **Custom Database Localization:** Support for direct file-system storage via File System Access API. Choose between standard browser `localStorage` or bind the vault directly to a custom `.enc` / `.json` file on your drive for automatic local sync. *(Note: Not supported on Android or unsupported browsers like Firefox/Safari).*
 * **Matrix Visual Style:** Styled Matrix-themed user interface with full mobile responsiveness.
 
 ### Cryptographic Security Mechanisms:
@@ -56,6 +57,7 @@ If you find this tool helpful, consider supporting my work:
 * **Kopie zapasowe i eksport:**
   * Tworzenie oraz przywracanie szyfrowanych kopii zapasowych bazy danych z/do pliku `.enc`.
   * Opcja szybkiej wysyłki kopii na e-mail (na telefonie automatycznie otwiera aplikację pocztową, na komputerze generuje gotowy plik wiadomości).
+* **Własna lokalizacja bazy danych (Custom Localization):** Obsługa bezpośredniego zapisu w pliku za pomocą File System Access API. Pozwala wybrać między pamięcią `localStorage` przeglądarki a powiązaniem bazy z wybranym plikiem `.enc` / `.json` na dysku komputera w celu automatycznej synchronizacji. *(Uwaga: Opcja nie jest obsługiwana na systemie Android oraz w przeglądarkach bez wsparcia API, np. Firefox/Safari).*
 * **Interfejs Matrix:** Dedykowany styl wizualny w klimacie Matrixa z pełną responsywnością dla urządzeń mobilnych.
 
 ### Bezpieczeństwo i mechanizmy kryptograficzne:
