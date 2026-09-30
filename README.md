@@ -26,16 +26,16 @@ Simple, secure, single-file TOTP authenticator.
 
 > ⚠️ It is strongly recommended to use a password consisting of at least 12–14 characters, including a mix of special characters, uppercase and lowercase letters, and digits.
 
-**How to import an old database in a new browser:**
-1. **Create a new database** with any temporary password.
-2. Go to **💾 Backup** → **IMPORT**.
-3. Enter your **old Master Password** and select your `vault.enc` file.
-
 # 🚀 Live Version & Offline Usage
 
 ### Live Demo & Offline Mode
 * **Live Demo / Online Version:** [https://spazma.github.io/matrix-auth/](https://spazma.github.io/matrix-auth/)
 * **Offline Usage:** If you want to use the app entirely offline (excluding the camera QR code scanning feature), simply copy the index.html file, rename it to whatever you like (e.g., matrix-auth.html), and open it locally in your browser. Feel free to authenticate securely! Good luck and greets to Wymiot from Discord :)
+
+# 👉 **How to import an old database in a new browser:**
+1. **Create a new database** with any temporary password.
+2. Go to **💾 Backup** → **IMPORT**.
+3. Enter your **old Master Password** and select your `vault.enc` file.
 
 ---
 
@@ -78,17 +78,16 @@ If you find this tool helpful, consider supporting my work:
 
 > ⚠️ Zaleca się użycie hasła składającego się z minimum 12–14 znaków, zawierającego mix znaków specjalnych, małych i wielkich liter oraz cyfr.
 
-**Jak zaimportować starą bazę w nowej przeglądarce:**
-1. **Stwórz nową bazę**, wpisując dowolne tymczasowe hasło.
-2. Przejdź do **💾 Kopia Bazy** → **IMPORT**.
-3. Wpisz **stare Hasło Główne** i wybierz swój plik `vault.enc`.
-
 # 🚀 Wersja Live & użycie Offline:
 
 ### Wersja Demo i Praca Offline
 * **Wersja Online / Demo:** [https://spazma.github.io/matrix-auth/](https://spazma.github.io/matrix-auth/)
 * **Praca Offline:** Jeśli chcesz pracować w pełni offline (z wyłączeniem opcji skanowania kodów QR kamerą), po prostu skopiuj plik `index.html`, nadaj mu dowolną nazwę np.`matrix-auth.html` i otwórz go lokalnie w przeglądarce. Korzystaj i autoryzuj się śmiało! Powodzenia i pozdro dla Wymiota z Discorda :)
-  
+
+# 👉 **Jak zaimportować starą bazę w nowej przeglądarce:**
+1. **Stwórz nową bazę**, wpisując dowolne tymczasowe hasło.
+2. Przejdź do **💾 Kopia Bazy** → **IMPORT**.
+3. Wpisz **stare Hasło Główne** i wybierz swój plik `vault.enc`.
 ---
 
 # 📜 License & Support
