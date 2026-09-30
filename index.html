@@ -1371,90 +1371,88 @@
       return localStorage.getItem(DB_KEY);
     }
 
-    async function unlockVault() {
-      const passInput = document.getElementById('master-pass');
-      const passConfirmInput = document.getElementById('master-pass-confirm');
-      masterPassword = passInput.value;
+ 	async function unlockVault() {
+		  const passInput = document.getElementById('master-pass');
+		  const passConfirmInput = document.getElementById('master-pass-confirm');
+		  masterPassword = passInput.value;
 
-      if (!masterPassword) {
-        alert(t('enterPassword'));
-        return;
-      }
+		  if (!masterPassword) {
+			alert(t('enterPassword'));
+			return;
+		  }
 
-      const encryptedRaw = await getRawEncryptedVault();
+		  const encryptedRaw = await getRawEncryptedVault();
 
-      if (!encryptedRaw) {
-        const confirmPass = passConfirmInput.value;
-        if (masterPassword !== confirmPass) {
-          alert(t('passwordsMismatch'));
-          return;
-        }
+		  if (!encryptedRaw) {
+			const confirmPass = passConfirmInput.value;
+			if (masterPassword !== confirmPass) {
+			  alert(t('passwordsMismatch'));
+			  return;
+			}
 
-        vaultData = { _settings: { language: currentLanguage } };
-        await saveVault();
-        document.getElementById('auth-overlay').style.display = 'none';
-        passInput.value = "";
-        passConfirmInput.value = "";
-        renderUI();
-        applyTranslations();
-        updateLangInfo();
-        return;
-      }
+			vaultData = { _settings: { language: currentLanguage } };
+			await saveVault();
+			document.getElementById('auth-overlay').style.display = 'none';
+			passInput.value = "";
+			passConfirmInput.value = "";
+			renderUI();
+			applyTranslations();
+			updateLangInfo();
+			return;
+		  }
 
-      const decrypted = await decryptData(encryptedRaw, masterPassword);
+		  const decrypted = await decryptData(encryptedRaw, masterPassword);
 
-      if (decrypted !== null) {
-        failedAttempts = 0;
-        vaultData = decrypted;
+		  if (decrypted !== null) {
+			failedAttempts = 0;
+			vaultData = decrypted;
 
-        if (!vaultData._settings) {
-          vaultData._settings = { language: browserLanguage };
-        }
+			if (!vaultData._settings) {
+			  vaultData._settings = {};
+			}
+			vaultData._settings.language = currentLanguage;
+			await saveVault();
 
-        if (languageChangedBeforeUnlock && languagePendingOnUnlock) {
-          vaultData._settings.language = languagePendingOnUnlock;
-          await saveVault();
-        }
+			languagePendingOnUnlock = null;
+			languageChangedBeforeUnlock = false;
 
-        currentLanguage = getLanguageFromVault();
-        languagePendingOnUnlock = null;
-        languageChangedBeforeUnlock = false;
+			document.getElementById('auth-overlay').style.display = 'none';
+			passInput.value = "";
+			passConfirmInput.value = "";
+			renderUI();
+			applyTranslations();
+			updateLangInfo();
+		  } else {
+			failedAttempts++;
 
-        document.getElementById('auth-overlay').style.display = 'none';
-        passInput.value = "";
-        passConfirmInput.value = "";
-        renderUI();
-        applyTranslations();
-        updateLangInfo();
-      } else {
-        failedAttempts++;
+			if (failedAttempts >= 2) {
+			  alert(t('failedAttempts'));
 
-        if (failedAttempts >= 2) {
-          alert(t('failedAttempts'));
+			  vaultData = {
+				_settings: { language: currentLanguage },
+				"Onet": "JBSWY3DPEHPK3PXP",
+				"Testing": "KZXW633PN5XW653B",
+				"Bank": "N7YBDP87BDHZAWPI",
+				"Account2": "98JU650UBPO12CMQ"
+			  };
 
-          vaultData = {
-            _settings: { language: currentLanguage },
-            "Poczta Onet": "JBSWY3DPEHPK3PXP",
-            "Konto Testowe": "KZXW633PN5XW653B"
-          };
+			  masterPassword = "password123";
+			  await saveVault();
 
-          masterPassword = "password123";
-          await saveVault();
-
-          failedAttempts = 0;
-          languagePendingOnUnlock = null;
-          languageChangedBeforeUnlock = false;
-          document.getElementById('auth-overlay').style.display = 'none';
-          passInput.value = "";
-          passConfirmInput.value = "";
-          renderUI();
-          applyTranslations();
-          updateLangInfo();
-        } else {
-          alert(t('wrongPassword'));
-        }
-      }
-    }
+			  failedAttempts = 0;
+			  languagePendingOnUnlock = null;
+			  languageChangedBeforeUnlock = false;
+			  document.getElementById('auth-overlay').style.display = 'none';
+			  passInput.value = "";
+			  passConfirmInput.value = "";
+			  renderUI();
+			  applyTranslations();
+			  updateLangInfo();
+			} else {
+			  alert(t('wrongPassword'));
+			}
+		  }
+		}
 
     async function saveVault() {
       const enc = await encryptData(vaultData, masterPassword);
