@@ -1191,22 +1191,22 @@
       }
     }
 
-    function initializeLanguageOnAuthScreen() {
-      browserLanguage = detectBrowserLanguage();
-      currentLanguage = browserLanguage;
-      languagePendingOnUnlock = null;
-      languageChangedBeforeUnlock = false;
+	function initializeLanguageOnAuthScreen() {
+	  if (!languageChangedBeforeUnlock) {
+		browserLanguage = detectBrowserLanguage();
+		currentLanguage = browserLanguage;
+	  }
 
-      document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.lang === browserLanguage);
-      });
+	  document.querySelectorAll('.lang-btn').forEach(btn => {
+		btn.classList.toggle('active', btn.dataset.lang === currentLanguage);
+	  });
 
-      applyTranslations();
-      updateLangInfo();
-      updateDBStatusUI();
-      checkDbExistsAndUpdateUI();
-      checkForUpdates();
-    }
+	  applyTranslations();
+	  updateLangInfo();
+	  updateDBStatusUI();
+	  checkDbExistsAndUpdateUI();
+	  checkForUpdates();
+	}
 
     function applyTranslations() {
       const header = document.getElementById('app-header');
