@@ -495,13 +495,13 @@
 
       <!-- SPRAWDZANIE WERSJI W REPO -->
       <div class="version-check-box" id="version-check-box">
-        this version: 1.9.1 / github: checking...
+        checking...
       </div>
 
     </div>
   </div>
 
-  <header id="app-header">MATRIX-AUTH | ver. 1.9.1</header>
+  <header id="app-header">MATRIX-AUTH</header>
 
   <main id="account-list"></main>
 
@@ -601,7 +601,7 @@
 
     const translations = {
       en: {
-        header: `MATRIX-AUTH | ver. ${CURRENT_VERSION}`,
+        headerPrefix: "MATRIX-AUTH | ver.",
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Enter Master Password",
         confirmPassPlaceholder: "Confirm Master Password",
@@ -650,7 +650,7 @@
         qrLocalWarning: "📷 QR Scanner works only in online mode (HTTPS / GitHub Pages)!\n\nOpening the file directly from disk blocks camera access on mobile devices."
       },
       pl: {
-        header: `MATRIX-AUTH | wer. ${CURRENT_VERSION}`,
+        headerPrefix: "MATRIX-AUTH | wer.",
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Podaj Hasło Główne",
         confirmPassPlaceholder: "Powtórz Hasło Główne",
@@ -699,7 +699,7 @@
         qrLocalWarning: "📷 Skaner QR działa tylko w wersji online (HTTPS / GitHub Pages)!\n\nOtwieranie pliku bezpośrednio z dysku blokuje kamerę w przeglądarkach mobilnych."
       },
       de: {
-        header: `MATRIX-AUTH | v. ${CURRENT_VERSION}`,
+        headerPrefix: "MATRIX-AUTH | v.",
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Hauptpasswort eingeben",
         confirmPassPlaceholder: "Hauptpasswort bestätigen",
@@ -748,7 +748,7 @@
         qrLocalWarning: "📷 Der QR-Scanner funktioniert nur im Online-Modus (HTTPS / GitHub Pages)!\n\nDas direkte Öffnen der Datei vom Datenträger blockiert den Kamerazugriff auf Mobilgeräten."
       },
       cs: {
-        header: `MATRIX-AUTH | v. ${CURRENT_VERSION}`,
+        headerPrefix: "MATRIX-AUTH | v.",
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Zadejte hlavní heslo",
         confirmPassPlaceholder: "Potvrďte hlavní heslo",
@@ -797,7 +797,7 @@
         qrLocalWarning: "📷 QR skener funguje pouze v režimu online (HTTPS / GitHub Pages)!\n\nPřímé otevření souboru z disku blokuje přístup ke kameře na mobilních zařízeních."
       },
       es: {
-        header: `MATRIX-AUTH | ver. ${CURRENT_VERSION}`,
+        headerPrefix: "MATRIX-AUTH | ver.",
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Introduce la contraseña maestra",
         confirmPassPlaceholder: "Confirma la contraseña maestra",
@@ -846,7 +846,7 @@
         qrLocalWarning: "📷 ¡El escáner QR solo funciona en modo en línea (HTTPS / GitHub Pages)!\n\nAbrir el archivo directamente desde el disco bloquea el acceso a la cámara en dispositivos móviles."
       },
       fr: {
-        header: `MATRIX-AUTH | v. ${CURRENT_VERSION}`,
+        headerPrefix: "MATRIX-AUTH | v.",
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Entrez le mot de passe principal",
         confirmPassPlaceholder: "Confirmez le mot de passe principal",
@@ -871,7 +871,7 @@
         exportBtn: "EXPORT (Enregistrer vault.enc)",
         shareBtn: "EMAIL / PARTAGER (Envoyer vault.enc)",
         importBtn: "IMPORT (Sélectionner un fichier)",
-        closeBtn: "FERMER",
+        closeBtn: "SCHLIESSEN",
         importPassTitle: "Déchiffrer la base de données",
         importPassDesc: "Entrez le mot de passe principal utilisé pour chiffrer le fichier:",
         importPassPlaceholder: "Mot de passe principal pour le fichier",
@@ -905,26 +905,29 @@
       return (translations[currentLanguage] && translations[currentLanguage][key]) || translations.en[key] || key;
     }
 
-    async function checkForUpdates() {
-      const vBox = document.getElementById('version-check-box');
-      if (!vBox) return;
+	async function checkForUpdates() {
+	  const vBox = document.getElementById('version-check-box');
+	  if (!vBox) return;
 
-      try {
-        const res = await fetch(`${VERSION_URL}?t=${Date.now()}`);
-        if (!res.ok) throw new Error();
+	  try {
+		const res = await fetch(`${VERSION_URL}?t=${Date.now()}`);
+		if (!res.ok) throw new Error();
 
-        const data = await res.json();
-        const githubVersion = data.version;
+		const data = await res.json();
+		const githubVersion = data.version;
 
-        if (githubVersion !== CURRENT_VERSION) {
-          vBox.innerHTML = `this version: ${CURRENT_VERSION} / github: ${githubVersion} <span class="version-tag-green">(update!)</span>`;
-        } else {
-          vBox.innerHTML = `this version: ${CURRENT_VERSION} / github: ${githubVersion}`;
-        }
-      } catch (err) {
-        vBox.innerHTML = `this version: ${CURRENT_VERSION} / github: --`;
-      }
-    }
+		if (githubVersion !== CURRENT_VERSION) {
+		  vBox.innerHTML = `
+			<a href="${GITHUB_LINK}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">
+			  this version: ${CURRENT_VERSION} / github: ${githubVersion} <span class="version-tag-green" style="text-decoration: underline;">(update!)</span>
+			</a>`;
+		} else {
+		  vBox.innerHTML = `this version: ${CURRENT_VERSION} / github: ${githubVersion}`;
+		}
+	  } catch (err) {
+		vBox.innerHTML = `this version: ${CURRENT_VERSION} / github: --`;
+	  }
+	}
 
     /* OBSŁUGA INDEXEDDB DLA ZAPAMIĘTANIA FILE HANDLE */
     function openHandleDB() {
@@ -1252,7 +1255,7 @@
       const selectFileBtn = document.getElementById('select-file-btn');
       const importCloseBtn = document.getElementById('import-close-btn');
 
-      if (header) header.textContent = t('header');
+      if (header) header.textContent = `${t('headerPrefix')} ${CURRENT_VERSION}`;
       if (authTitle) authTitle.textContent = t('mainTitle');
       if (authLink) authLink.textContent = "GITHUB";
       if (authLink) authLink.href = GITHUB_LINK;
