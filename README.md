@@ -35,7 +35,7 @@ Simple, secure, single-file TOTP authenticator.
 # 👉 **How to import an old database in a new browser:**
 1. **Create a new database** with any temporary password.
 2. Go to **💾 Backup** → **IMPORT**.
-3. Enter your **old Master Password** and select your `vault.enc` file.
+3. Enter your **old Master Password** and select your `matrix.enc` file.
 
 ---
 
@@ -87,7 +87,7 @@ If you find this tool helpful, consider supporting my work:
 # 👉 **Jak zaimportować starą bazę w nowej przeglądarce:**
 1. **Stwórz nową bazę**, wpisując dowolne tymczasowe hasło.
 2. Przejdź do **💾 Kopia Bazy** → **IMPORT**.
-3. Wpisz **stare Hasło Główne** i wybierz swój plik `vault.enc`.
+3. Wpisz **stare Hasło Główne** i wybierz swój plik `matrix.enc`.
 ---
 
 # 📜 License & Support
