@@ -82,9 +82,10 @@ Jeśli kod Ci się przydał i chcesz docenić moją pracę, możesz postawić mi
 * **Wersja Online / Demo:** [https://spazma.github.io/matrix-auth/](https://spazma.github.io/matrix-auth/)
 * **Praca Offline:** Jeśli chcesz pracować w pełni offline (z wyłączeniem opcji skanowania kodów QR kamerą), po prostu skopiuj plik `index.html`, nadaj mu dowolną nazwę np.`matrix-auth.html` i otwórz go lokalnie w przeglądarce. Korzystaj i autoryzuj się śmiało! Powodzenia i pozdro dla Wymiota z Discorda :)
 
+
 <p align="center">
-  <img width="401" height="164" alt="im1" src="https://github.com/user-attachments/assets/81489026-07a8-42f5-94b9-7a38df60f9da" />
-  <img width="402" height="223" alt="im2" src="https://github.com/user-attachments/assets/b0139906-5727-49d0-a364-94c638efbfa1" />
-  <br />
-  <img width="402" height="278" alt="im3" src="https://github.com/user-attachments/assets/28f16068-ed14-45b6-8d30-e38a656cbae6" />
+<img width="401" height="214" alt="im1" src="https://github.com/user-attachments/assets/bbc5b3fa-c641-4384-83c0-53ffc463fc11" />
+<img width="402" height="273" alt="im2" src="https://github.com/user-attachments/assets/ca1ecea7-2ff0-4395-8ac7-0b0863fc693f" />
+<br />
+<img width="402" height="328" alt="im3" src="https://github.com/user-attachments/assets/556a4a69-b347-481c-b613-e1c0603fefb8" />
 </p>
