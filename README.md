@@ -86,8 +86,12 @@ Jeśli kod Ci się przydał i chcesz docenić moją pracę, możesz postawić mi
 ---
 
 <p align="center">
-<img width="401" height="214" alt="im1" src="https://github.com/user-attachments/assets/bbc5b3fa-c641-4384-83c0-53ffc463fc11" />
+<img width="402" height="216" alt="QUnxPiMCrb0" src="https://github.com/user-attachments/assets/8d1cfcb2-cf39-4aae-9c01-5fc04a02e87d" />
 <img width="402" height="273" alt="im2" src="https://github.com/user-attachments/assets/ca1ecea7-2ff0-4395-8ac7-0b0863fc693f" />
 <br />
 <img width="402" height="328" alt="im3" src="https://github.com/user-attachments/assets/556a4a69-b347-481c-b613-e1c0603fefb8" />
 </p>
+
+
+
+
