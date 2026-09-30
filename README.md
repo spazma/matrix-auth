@@ -26,7 +26,12 @@ Simple, secure, single-file TOTP authenticator.
 
 > ⚠️ It is strongly recommended to use a password consisting of at least 12–14 characters, including a mix of special characters, uppercase and lowercase letters, and digits.
 
-# 🚀 Demo & Offline Usage:
+**How to import an old database in a new browser:**
+1. **Create a new database** with any temporary password.
+2. Go to **💾 Backup** → **IMPORT**.
+3. Enter your **old Master Password** and select your `vault.enc` file.
+
+# 🚀 Live Version & Offline Usage
 
 ### Live Demo & Offline Mode
 * **Live Demo / Online Version:** [https://spazma.github.io/matrix-auth/](https://spazma.github.io/matrix-auth/)
@@ -73,7 +78,12 @@ If you find this tool helpful, consider supporting my work:
 
 > ⚠️ Zaleca się użycie hasła składającego się z minimum 12–14 znaków, zawierającego mix znaków specjalnych, małych i wielkich liter oraz cyfr.
 
-# 🚀 Demo & Offline:
+**Jak zaimportować starą bazę w nowej przeglądarce:**
+1. **Stwórz nową bazę**, wpisując dowolne tymczasowe hasło.
+2. Przejdź do **💾 Kopia Bazy** → **IMPORT**.
+3. Wpisz **stare Hasło Główne** i wybierz swój plik `vault.enc`.
+
+# 🚀 Wersja Live & użycie Offline:
 
 ### Wersja Demo i Praca Offline
 * **Wersja Online / Demo:** [https://spazma.github.io/matrix-auth/](https://spazma.github.io/matrix-auth/)
@@ -95,9 +105,5 @@ Jeśli kod Ci się przydał i chcesz docenić moją pracę, możesz postawić mi
 <img width="402" height="273" alt="im2" src="https://github.com/user-attachments/assets/ca1ecea7-2ff0-4395-8ac7-0b0863fc693f" />
 <img width="402" height="328" alt="im3" src="https://github.com/user-attachments/assets/556a4a69-b347-481c-b613-e1c0603fefb8" />
 <br />
-<img width="422" height="369" alt="4xtdmBy9zaA" src="https://github.com/user-attachments/assets/9d0a6398-aa15-4a5f-bfd5-4dccbb0ded99" />
+<img width="422" height="376" alt="wAJ2r4XJUsa" src="https://github.com/user-attachments/assets/859477bf-433e-4aba-b289-c459b66c398a" />
 </p>
-
-
-
-
