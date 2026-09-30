@@ -23,6 +23,12 @@ Simple, secure, single-file TOTP authenticator.
 
 > ⚠️ **DURESS / FAKE PASSWORD MECHANISM:** Entering an incorrect (or fake) password twice consecutively triggers a wipe-and-switch operation: the app overwrites and replaces the real database with an empty/fake state. Once activated, your original data is permanently erased locally, and recovery is only possible by restoring from a previously created backup file.
 
+# 🚀 Demo & Offline Usage:
+
+### Live Demo & Offline Mode
+* **Live Demo / Online Version:** [https://spazma.github.io/matrix-auth/](https://spazma.github.io/matrix-auth/)
+* **Offline Usage:** If you want to use the app entirely offline (excluding the camera QR code scanning feature), simply copy the index.html file, rename it to whatever you like (e.g., matrix-auth.html), and open it locally in your browser. Feel free to authenticate securely! Good luck and greets to Wymiot from Discord :)
+
 ---
 
 # 📜 License & Support
@@ -72,6 +78,9 @@ Jeśli kod Ci się przydał i chcesz docenić moją pracę, możesz postawić mi
 
 <a href="https://buymeacoffee.com/spazma" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 217px !important;"></a>
 
+### Wersja Demo i Praca Offline
+* **Wersja Online / Demo:** [https://spazma.github.io/matrix-auth/](https://spazma.github.io/matrix-auth/)
+* **Praca Offline:** Jeśli chcesz pracować w pełni offline (z wyłączeniem opcji skanowania kodów QR kamerą), po prostu skopiuj plik `index.html`, nadaj mu dowolną nazwę np.`matrix-auth.html` i otwórz go lokalnie w przeglądarce. Korzystaj i autoryzuj się śmiało! Powodzenia i pozdro dla Wymiota z Discorda :)
 
 <p align="center">
   <img width="401" height="164" alt="im1" src="https://github.com/user-attachments/assets/81489026-07a8-42f5-94b9-7a38df60f9da" />
