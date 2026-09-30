@@ -20,6 +20,7 @@
       --green: #a6e3a1;
       --blue: #89b4fa;
       --orange: #fab387;
+      --subtext: #a6adc8;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
@@ -53,7 +54,7 @@
 
     .auth-box {
       background: rgba(30, 30, 46, 0.95); padding: 25px; border-radius: 12px;
-      width: 100%; max-width: 500px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+      width: 100%; max-width: 520px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.8);
       max-height: 90vh; overflow-y: auto; border: 1px solid #45475a;
     }
 
@@ -82,7 +83,7 @@
     }
 
     .auth-title-line span {
-      color: #a6adc8;
+      color: var(--subtext);
       font-size: 0.9rem;
     }
 
@@ -156,6 +157,96 @@
     .btn-del:hover { background: var(--pink); color: #11111b; }
 
     .btn-show { background: var(--blue); color: #11111b; padding: 8px 14px; font-size: 0.85rem; }
+
+    /* SEKCJA BAZY DANYCH POD OKNEM LOGOWANIA */
+    .db-status-container {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px dashed #45475a;
+      text-align: left;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .db-location-box {
+      background: rgba(17, 17, 27, 0.7);
+      border: 1px solid #313244;
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+
+    .db-location-box.inactive {
+      opacity: 0.45;
+    }
+
+    .db-location-box.active {
+      border-color: var(--green);
+      background: rgba(24, 30, 40, 0.8);
+      opacity: 1;
+    }
+
+    .db-info-left {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .db-title {
+      font-weight: bold;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .db-check {
+      color: var(--green);
+      font-size: 1rem;
+    }
+
+    .db-date {
+      font-size: 0.75rem;
+      color: var(--subtext);
+    }
+
+    .db-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-db-text {
+      background: transparent;
+      border: 1px solid var(--pink);
+      color: var(--pink);
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      border-radius: 4px;
+    }
+    .btn-db-text:hover {
+      background: var(--pink);
+      color: #11111b;
+    }
+
+    .btn-db-select {
+      background: var(--blue);
+      color: #11111b;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      border-radius: 4px;
+    }
+
+    .not-supported-tag {
+      font-size: 0.72rem;
+      color: var(--orange);
+      font-style: italic;
+    }
 
     header {
       background: var(--header-bg); color: var(--pink); text-align: center;
@@ -247,14 +338,14 @@
 
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 90;
+      background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 120;
       padding: 15px;
       backdrop-filter: blur(5px);
     }
 
     .lang-info {
       font-size: 0.75rem;
-      color: #a6adc8;
+      color: var(--subtext);
       margin-top: 8px;
       font-style: italic;
     }
@@ -349,6 +440,43 @@
         <button id="reset-btn" class="btn-del" style="padding: 12px 16px; font-size: 1.1rem;" title="RESET DATABASE" onclick="resetDatabase()">🗑️</button>
       </div>
       <div class="lang-info" id="lang-info"></div>
+
+      <!-- SEKCJA STATUSU BAZY DANYCH -->
+      <div class="db-status-container">
+        <!-- LOCAL STORAGE -->
+        <div id="ls-box" class="db-location-box inactive">
+          <div class="db-info-left">
+            <div class="db-title">
+              <span id="ls-check" class="db-check" style="display: none;">✓</span>
+              LOCAL STORAGE
+            </div>
+            <div id="ls-date" class="db-date">last change: --.--.----</div>
+          </div>
+          <div class="db-actions-right">
+            <button id="ls-delete-btn" class="btn-db-text" style="display:none;" onclick="deleteLSStorage()">USUŃ</button>
+            <button id="ls-use-btn" class="btn-db-select" style="display:none;" onclick="selectStorageType('ls')">UŻYJ</button>
+          </div>
+        </div>
+
+        <!-- CUSTOM LOCALIZATION -->
+        <div id="custom-box" class="db-location-box inactive">
+          <div class="db-info-left">
+            <div class="db-title">
+              <span id="custom-check" class="db-check" style="display: none;">✓</span>
+              CUSTOM LOCALIZATION
+            </div>
+            <div id="custom-date" class="db-date">last change: --.--.----</div>
+            <div id="custom-not-supported" class="not-supported-tag" style="display: none;">
+              not supported on firefox, android itd
+            </div>
+          </div>
+          <div class="db-actions-right">
+            <button id="custom-delete-btn" class="btn-db-text" style="display:none;" onclick="deleteCustomStorage()">USUŃ</button>
+            <button id="custom-option-btn" class="btn-db-select" onclick="showCustomModal()">OPTION</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -370,6 +498,20 @@
     </div>
   </footer>
 
+  <!-- MODAL - CUSTOM LOCALIZATION -->
+  <div id="custom-modal" class="modal-overlay">
+    <div class="auth-box">
+      <h3 id="custom-modal-title" style="margin-bottom: 15px; color: var(--blue);">Custom Localization Options</h3>
+      <p id="custom-modal-desc" style="font-size: 0.85rem; color: var(--subtext); margin-bottom: 20px;">
+        Wskaż plik bazy danych na dysku komputera. Aplikacja zapamięta go i użyje przy następnym uruchomieniu.
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button id="custom-select-file-btn" class="btn-primary" onclick="pickCustomFile()">WSKAŻ I ZAPISZ PLIK BAZY</button>
+        <button id="custom-modal-cancel" style="background: #45475a; color: #fff; width: 100%;" onclick="hideCustomModal()">ZAMKNIJ</button>
+      </div>
+    </div>
+  </div>
+
   <div id="add-modal" class="modal-overlay">
     <div class="auth-box">
       <h3 id="add-modal-title" style="margin-bottom: 15px; color: var(--blue);">Add New App</h3>
@@ -390,7 +532,7 @@
   <div id="backup-modal" class="modal-overlay">
     <div class="auth-box">
       <h3 id="backup-title" style="margin-bottom: 15px; color: var(--blue);">Database Backup</h3>
-      <p id="backup-desc" style="font-size: 0.85rem; color: #a6adc8; margin-bottom: 20px;">
+      <p id="backup-desc" style="font-size: 0.85rem; color: var(--subtext); margin-bottom: 20px;">
         You can save the encrypted database to a file, share it via email, or import an existing backup.
       </p>
 
@@ -406,7 +548,7 @@
   <div id="import-pass-modal" class="modal-overlay">
     <div class="auth-box">
       <h3 id="import-pass-title" style="margin-bottom: 10px; color: var(--pink);">Decrypt Database</h3>
-      <p id="import-pass-desc" style="font-size: 0.85rem; color: #a6adc8; margin-bottom: 15px;">
+      <p id="import-pass-desc" style="font-size: 0.85rem; color: var(--subtext); margin-bottom: 15px;">
         Enter the Master Password used to encrypt the file:
       </p>
       <input type="password" id="import-pass-input" placeholder="Master Password for file" onkeydown="if(event.key === 'Enter') triggerFileSelect()">
@@ -426,7 +568,11 @@
     let languageChangedBeforeUnlock = false;
     let html5QrCode = null;
     const DB_KEY = "matrix_vault_enc";
+    const DB_DATE_KEY = "matrix_vault_last_change";
+    const STORAGE_TYPE_KEY = "matrix_storage_type"; // 'ls' lub 'custom'
     const GITHUB_LINK = "https://github.com/spazma/matrix-auth";
+
+    let customFileHandle = null;
 
     const translations = {
       en: {
@@ -459,6 +605,9 @@
         importPassPlaceholder: "Master Password for file",
         selectFileBtn: "SELECT FILE",
         scanQrBtn: "📷 SCAN QR CODE (hosted/online only)",
+        customModalTitle: "Custom Localization Options",
+        customModalDesc: "Specify the database file on your computer disk. The application will remember and use it on next launch.",
+        customSelectFileBtn: "SELECT & SAVE DATABASE FILE",
         wrongPassword: "Wrong Master Password!",
         failedAttempts: "You failed twice — are you really the one?",
         codeChangeIn: "CODE CHANGES IN:",
@@ -501,6 +650,9 @@
         importPassPlaceholder: "Hasło Główne do pliku",
         selectFileBtn: "WYBIERZ PLIK",
         scanQrBtn: "📷 SKANUJ KOD QR (tylko online / hosted)",
+        customModalTitle: "Opcje Własnej Lokalizacji Bazy",
+        customModalDesc: "Wskaż plik bazy danych na dysku komputera. Aplikacja zapamięta go i użyje przy następnym uruchomieniu.",
+        customSelectFileBtn: "WSKAŻ I ZAPISZ PLIK BAZY",
         wrongPassword: "Błędne Hasło Główne!",
         failedAttempts: "Pomyliłeś się dwa razy — czy to na pewno Ty?",
         codeChangeIn: "ZMIANA KODU ZA:",
@@ -543,6 +695,9 @@
         importPassPlaceholder: "Hauptpasswort für Datei",
         selectFileBtn: "DATEI WÄHLEN",
         scanQrBtn: "📷 QR-CODE SCANNEN (nur online / hosted)",
+        customModalTitle: "Optionen für benutzerdefinierten Speicherort",
+        customModalDesc: "Geben Sie die Datenbankdatei auf Ihrer Festplatte an. Die Anwendung wird sie für den nächsten Start speichern.",
+        customSelectFileBtn: "DATENBANKDATEI AUSWÄHLEN & SPEICHERN",
         wrongPassword: "Falsches Hauptpasswort!",
         failedAttempts: "Sie haben zweimal versagt — sind Sie wirklich die richtige Person?",
         codeChangeIn: "CODE ÄNDERT SICH IN:",
@@ -585,6 +740,9 @@
         importPassPlaceholder: "Hlavní heslo pro soubor",
         selectFileBtn: "VYBRAT SOUBOR",
         scanQrBtn: "📷 SKENOVAT QR KÓD (pouze online / hosted)",
+        customModalTitle: "Možnosti vlastního umístění",
+        customModalDesc: "Určete soubor databáze na disku počítače. Aplikace si jej zapamatuje a použije při příštím spuštění.",
+        customSelectFileBtn: "VYBRAT A ULOŽIT SOUBOR DATABÁZE",
         wrongPassword: "Špatné hlavní heslo!",
         failedAttempts: "Chyboval jsi dvakrát — jsi opravdu ty?",
         codeChangeIn: "KÓD SE ZMĚNÍ ZA:",
@@ -627,6 +785,9 @@
         importPassPlaceholder: "Contraseña maestra del archivo",
         selectFileBtn: "SELECCIONAR ARCHIVO",
         scanQrBtn: "📷 ESCANEAR CÓDIGO QR (solo online / hosted)",
+        customModalTitle: "Opciones de ubicación personalizada",
+        customModalDesc: "Especifica el archivo de la base de datos en el disco. La aplicación lo recordará y usará en el próximo inicio.",
+        customSelectFileBtn: "SELECCIONAR Y GUARDAR ARCHIVO",
         wrongPassword: "¡Contraseña maestra incorrecta!",
         failedAttempts: "Has fallado dos veces — ¿eres realmente tú?",
         codeChangeIn: "EL CÓDIGO CAMBIA EN:",
@@ -668,7 +829,10 @@
         importPassDesc: "Entrez le mot de passe principal utilisé pour chiffrer le fichier:",
         importPassPlaceholder: "Mot de passe principal pour le fichier",
         selectFileBtn: "SÉLECTIONNER FICHIER",
-        scanQrBtn: "📷 SCANNER CÓDE QR (en ligne / hosted uniquement)",
+        scanQrBtn: "📷 SCANNER CODE QR (en ligne / hosted uniquement)",
+        customModalTitle: "Options d'emplacement personnalisé",
+        customModalDesc: "Spécifiez le fichier de base de données sur votre disque. L'application le mémorisera pour le prochain lancement.",
+        customSelectFileBtn: "SÉLECTIONNER ET ENREGISTRER LE FICHIER",
         wrongPassword: "Mot de passe principal incorrect!",
         failedAttempts: "Vous avez échoué deux fois — êtes-vous vraiment vous?",
         codeChangeIn: "LE CODE CHANGE DANS:",
@@ -691,6 +855,188 @@
       return (translations[currentLanguage] && translations[currentLanguage][key]) || translations.en[key] || key;
     }
 
+    /* OBSŁUGA INDEXEDDB DLA ZAPAMIĘTANIA FILE HANDLE */
+    function openHandleDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open("MatrixAuthDB", 1);
+        req.onupgradeneeded = () => req.result.createObjectStore("handles");
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function saveFileHandle(handle) {
+      const db = await openHandleDB();
+      const tx = db.transaction("handles", "readwrite");
+      tx.objectStore("handles").put(handle, "customVaultHandle");
+      return tx.complete;
+    }
+
+    async function getFileHandle() {
+      try {
+        const db = await openHandleDB();
+        const tx = db.transaction("handles", "readonly");
+        const req = tx.objectStore("handles").get("customVaultHandle");
+        return new Promise((resolve) => {
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function removeFileHandle() {
+      try {
+        const db = await openHandleDB();
+        const tx = db.transaction("handles", "readwrite");
+        tx.objectStore("handles").delete("customVaultHandle");
+      } catch (e) {}
+    }
+
+    function isCustomSupported() {
+      return 'showOpenFilePicker' in window;
+    }
+
+    function formatDate(isoStr) {
+      if (!isoStr) return "--.--.----";
+      const d = new Date(isoStr);
+      if (isNaN(d.getTime())) return "--.--.----";
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}.${month}.${year}`;
+    }
+
+    async function updateDBStatusUI() {
+      const selectedType = localStorage.getItem(STORAGE_TYPE_KEY) || 'ls';
+      const lsData = localStorage.getItem(DB_KEY);
+      const lsDate = localStorage.getItem(DB_DATE_KEY);
+      
+      const lsBox = document.getElementById('ls-box');
+      const lsCheck = document.getElementById('ls-check');
+      const lsDateEl = document.getElementById('ls-date');
+      const lsDeleteBtn = document.getElementById('ls-delete-btn');
+      const lsUseBtn = document.getElementById('ls-use-btn');
+
+      const customBox = document.getElementById('custom-box');
+      const customCheck = document.getElementById('custom-check');
+      const customDateEl = document.getElementById('custom-date');
+      const customDeleteBtn = document.getElementById('custom-delete-btn');
+      const customNotSupported = document.getElementById('custom-not-supported');
+
+      // Weryfikacja Local Storage
+      if (lsData) {
+        lsDateEl.textContent = `last change: ${formatDate(lsDate)}`;
+        lsDeleteBtn.style.display = 'inline-block';
+      } else {
+        lsDateEl.textContent = 'last change: --.--.----';
+        lsDeleteBtn.style.display = 'none';
+      }
+
+      if (selectedType === 'ls') {
+        lsBox.className = "db-location-box active";
+        lsCheck.style.display = "inline";
+        lsUseBtn.style.display = "none";
+      } else {
+        lsBox.className = "db-location-box inactive";
+        lsCheck.style.display = "none";
+        if (lsData) lsUseBtn.style.display = "inline-block";
+        else lsUseBtn.style.display = "none";
+      }
+
+      // Weryfikacja Custom Storage
+      if (!isCustomSupported()) {
+        customBox.className = "db-location-box inactive";
+        customNotSupported.style.display = "block";
+        document.getElementById('custom-option-btn').style.display = "none";
+        customDeleteBtn.style.display = "none";
+        customCheck.style.display = "none";
+        return;
+      }
+
+      customFileHandle = await getFileHandle();
+      if (customFileHandle) {
+        try {
+          const file = await customFileHandle.getFile();
+          customDateEl.textContent = `last change: ${formatDate(file.lastModified)}`;
+          customDeleteBtn.style.display = 'inline-block';
+        } catch (e) {
+          customDateEl.textContent = 'last change: (brak dostępu)';
+          customDeleteBtn.style.display = 'inline-block';
+        }
+      } else {
+        customDateEl.textContent = 'last change: --.--.----';
+        customDeleteBtn.style.display = 'none';
+      }
+
+      if (selectedType === 'custom' && customFileHandle) {
+        customBox.className = "db-location-box active";
+        customCheck.style.display = "inline";
+      } else {
+        customBox.className = "db-location-box inactive";
+        customCheck.style.display = "none";
+      }
+    }
+
+    function selectStorageType(type) {
+      localStorage.setItem(STORAGE_TYPE_KEY, type);
+      updateDBStatusUI();
+    }
+
+    function deleteLSStorage() {
+      if (confirm("Czy na pewno chcesz usunąć bazę z Local Storage?")) {
+        localStorage.removeItem(DB_KEY);
+        localStorage.removeItem(DB_DATE_KEY);
+        if (localStorage.getItem(STORAGE_TYPE_KEY) === 'ls') {
+          localStorage.setItem(STORAGE_TYPE_KEY, 'custom');
+        }
+        updateDBStatusUI();
+      }
+    }
+
+    async function deleteCustomStorage() {
+      if (confirm("Czy na pewno chcesz usunąć powiązanie z własnym plikiem bazy danych?")) {
+        await removeFileHandle();
+        customFileHandle = null;
+        localStorage.setItem(STORAGE_TYPE_KEY, 'ls');
+        updateDBStatusUI();
+      }
+    }
+
+    function showCustomModal() {
+      document.getElementById('custom-modal').style.display = 'flex';
+    }
+
+    function hideCustomModal() {
+      document.getElementById('custom-modal').style.display = 'none';
+    }
+
+    async function pickCustomFile() {
+      if (!isCustomSupported()) return;
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          types: [{
+            description: 'Matrix Auth Encrypted Vault',
+            accept: { 'application/json': ['.enc', '.json'] }
+          }],
+          multiple: false
+        });
+
+        if (handle) {
+          customFileHandle = handle;
+          await saveFileHandle(handle);
+          localStorage.setItem(STORAGE_TYPE_KEY, 'custom');
+          hideCustomModal();
+          updateDBStatusUI();
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          alert('Błąd podczas wyboru pliku.');
+        }
+      }
+    }
+
     function detectBrowserLanguage() {
       const supportedLangs = ['en', 'pl', 'de', 'cs', 'fr', 'es'];
       const browserLang = navigator.language || navigator.userLanguage;
@@ -707,10 +1053,7 @@
         btn.classList.toggle('active', btn.dataset.lang === lang);
       });
 
-      document.getElementById('auth-title').textContent = t('mainTitle');
-      document.getElementById('master-pass').placeholder = t('masterPassPlaceholder');
-      document.getElementById('unlock-btn').textContent = t('unlockBtn');
-      document.getElementById('reset-btn').title = t('resetTooltip');
+      applyTranslations();
       updateLangInfo();
     }
 
@@ -770,6 +1113,7 @@
 
       applyTranslations();
       updateLangInfo();
+      updateDBStatusUI();
     }
 
     function applyTranslations() {
@@ -782,23 +1126,32 @@
       const addBtn = document.getElementById('add-btn');
       const lockBtn = document.getElementById('lock-btn');
       const placeholderText = document.getElementById('placeholder-text');
+
+      // Modals
+      const customModalTitle = document.getElementById('custom-modal-title');
+      const customModalDesc = document.getElementById('custom-modal-desc');
+      const customSelectFileBtn = document.getElementById('custom-select-file-btn');
+      const customModalCancel = document.getElementById('custom-modal-cancel');
+
       const addTitle = document.getElementById('add-modal-title');
       const newName = document.getElementById('new-name');
       const newSecret = document.getElementById('new-secret');
       const saveBtn = document.getElementById('save-btn');
       const addCancel = document.getElementById('add-modal-cancel');
+      const scanQrBtn = document.getElementById('scan-qr-btn');
+
       const backupTitle = document.getElementById('backup-title');
       const backupDesc = document.getElementById('backup-desc');
       const exportBtn = document.getElementById('export-btn');
       const shareBtn = document.getElementById('share-btn');
       const importBtn = document.getElementById('import-btn');
       const backupClose = document.getElementById('backup-close-btn');
+
       const importPassTitle = document.getElementById('import-pass-title');
       const importPassDesc = document.getElementById('import-pass-desc');
       const importPassInput = document.getElementById('import-pass-input');
       const selectFileBtn = document.getElementById('select-file-btn');
       const importCloseBtn = document.getElementById('import-close-btn');
-      const scanQrBtn = document.getElementById('scan-qr-btn');
 
       if (header) header.textContent = t('header');
       if (authTitle) authTitle.textContent = t('mainTitle');
@@ -810,23 +1163,32 @@
       if (addBtn) addBtn.textContent = t('addAppBtn');
       if (lockBtn) lockBtn.textContent = t('lockBtn');
       if (placeholderText) placeholderText.textContent = t('defaultPlaceholder');
+
+      // Tłumaczenia Modali
+      if (customModalTitle) customModalTitle.textContent = t('customModalTitle');
+      if (customModalDesc) customModalDesc.textContent = t('customModalDesc');
+      if (customSelectFileBtn) customSelectFileBtn.textContent = t('customSelectFileBtn');
+      if (customModalCancel) customModalCancel.textContent = t('closeBtn');
+
       if (addTitle) addTitle.textContent = t('addAppTitle');
       if (newName) newName.placeholder = t('appNamePlaceholder');
       if (newSecret) newSecret.placeholder = t('secretPlaceholder');
       if (saveBtn) saveBtn.textContent = t('saveBtn');
       if (addCancel) addCancel.textContent = t('cancelBtn');
+      if (scanQrBtn) scanQrBtn.textContent = t('scanQrBtn');
+
       if (backupTitle) backupTitle.textContent = t('backupTitle');
       if (backupDesc) backupDesc.textContent = t('backupDesc');
       if (exportBtn) exportBtn.textContent = t('exportBtn');
       if (shareBtn) shareBtn.textContent = t('shareBtn');
       if (importBtn) importBtn.textContent = t('importBtn');
       if (backupClose) backupClose.textContent = t('closeBtn');
+
       if (importPassTitle) importPassTitle.textContent = t('importPassTitle');
       if (importPassDesc) importPassDesc.textContent = t('importPassDesc');
       if (importPassInput) importPassInput.placeholder = t('importPassPlaceholder');
       if (selectFileBtn) selectFileBtn.textContent = t('selectFileBtn');
       if (importCloseBtn) importCloseBtn.textContent = t('cancelBtn');
-      if (scanQrBtn) scanQrBtn.textContent = t('scanQrBtn');
 
       updateCodeDisplay(true);
       renderUI();
@@ -927,12 +1289,35 @@
     function resetDatabase() {
       if (confirm(t('resetConfirm'))) {
         localStorage.removeItem(DB_KEY);
+        localStorage.removeItem(DB_DATE_KEY);
         vaultData = {};
         masterPassword = "";
         failedAttempts = 0;
         document.getElementById('master-pass').value = "";
+        updateDBStatusUI();
         alert(t('resetSuccess'));
       }
+    }
+
+    async function getRawEncryptedVault() {
+      const storageType = localStorage.getItem(STORAGE_TYPE_KEY) || 'ls';
+      if (storageType === 'custom' && isCustomSupported()) {
+        const handle = await getFileHandle();
+        if (handle) {
+          try {
+            if ((await handle.queryPermission({ mode: 'read' })) !== 'granted') {
+              if ((await handle.requestPermission({ mode: 'read' })) !== 'granted') {
+                return null;
+              }
+            }
+            const file = await handle.getFile();
+            return await file.text();
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+      return localStorage.getItem(DB_KEY);
     }
 
     async function unlockVault() {
@@ -940,7 +1325,7 @@
       masterPassword = passInput.value;
       if (!masterPassword) return;
 
-      const encryptedRaw = localStorage.getItem(DB_KEY);
+      const encryptedRaw = await getRawEncryptedVault();
 
       if (!encryptedRaw) {
         vaultData = { _settings: { language: currentLanguage } };
@@ -1008,7 +1393,33 @@
 
     async function saveVault() {
       const enc = await encryptData(vaultData, masterPassword);
-      localStorage.setItem(DB_KEY, enc);
+      const nowIso = new Date().toISOString();
+      const storageType = localStorage.getItem(STORAGE_TYPE_KEY) || 'ls';
+
+      if (storageType === 'custom' && isCustomSupported()) {
+        const handle = await getFileHandle();
+        if (handle) {
+          try {
+            if ((await handle.queryPermission({ mode: 'readwrite' })) !== 'granted') {
+              await handle.requestPermission({ mode: 'readwrite' });
+            }
+            const writable = await handle.createWritable();
+            await writable.write(enc);
+            await writable.close();
+          } catch (e) {
+            console.error("Błąd zapisu pliku custom:", e);
+            localStorage.setItem(DB_KEY, enc);
+            localStorage.setItem(DB_DATE_KEY, nowIso);
+          }
+        } else {
+          localStorage.setItem(DB_KEY, enc);
+          localStorage.setItem(DB_DATE_KEY, nowIso);
+        }
+      } else {
+        localStorage.setItem(DB_KEY, enc);
+        localStorage.setItem(DB_DATE_KEY, nowIso);
+      }
+      updateDBStatusUI();
     }
 
     function lockVault() {
