@@ -24,6 +24,8 @@ Simple, secure, single-file TOTP authenticator.
 
 > ⚠️ **DURESS / FAKE PASSWORD MECHANISM:** Entering an incorrect (or fake) password twice consecutively triggers a wipe-and-switch operation: the app overwrites and replaces the real database with an empty/fake state. Once activated, your original data is permanently erased locally, and recovery is only possible by restoring from a previously created backup file.
 
+> ⚠️ It is strongly recommended to use a password consisting of at least 12–14 characters, including a mix of special characters, uppercase and lowercase letters, and digits.
+
 # 🚀 Demo & Offline Usage:
 
 ### Live Demo & Offline Mode
@@ -68,6 +70,8 @@ If you find this tool helpful, consider supporting my work:
 * **Automatyczne czyszczenie pamięci:** Po zablokowaniu aplikacji (`lockVault`) dane w pamięci RAM JS są natychmiast czyszczone, a aplikacja wraca do ekranu logowania.
 
 > ⚠️ **MECHANIZM FAŁSZYWEGO HASŁA (DURESS):** Dwukrotne wpisanie błędnego (lub fałszywego) hasła powoduje przełączenie na fałszywą bazę i trwałe wyczyszczenie dotychczasowych danych. Po uaktywnieniu tego mechanizmu oryginalna baza zostaje bezpowrotnie usunięta z przeglądarki, a jedyną drogą do odzyskania dostępu jest przywrócenie danych z wcześniej utworzonej kopii zapasowej.
+
+> ⚠️ Zaleca się użycie hasła składającego się z minimum 12–14 znaków, zawierającego mix znaków specjalnych, małych i wielkich liter oraz cyfr.
 
 # 🚀 Demo & Offline:
 
