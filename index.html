@@ -435,6 +435,7 @@
       </div>
 
       <input type="password" id="master-pass" placeholder="Enter Master Password" onkeydown="if(event.key === 'Enter') unlockVault()">
+      <input type="password" id="master-pass-confirm" placeholder="Confirm Master Password" style="display: none;" onkeydown="if(event.key === 'Enter') unlockVault()">
       <div style="display: flex; gap: 10px;">
         <button id="unlock-btn" class="btn-primary" style="flex: 1;" onclick="unlockVault()">UNLOCK</button>
         <button id="reset-btn" class="btn-del" style="padding: 12px 16px; font-size: 1.1rem;" title="RESET DATABASE" onclick="resetDatabase()">🗑️</button>
@@ -579,10 +580,12 @@
         header: "MATRIX-AUTH | ver. 1.9.1",
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Enter Master Password",
+        confirmPassPlaceholder: "Confirm Master Password",
         unlockBtn: "UNLOCK",
+        createBtn: "CREATE NEW DATABASE",
         resetTooltip: "RESET DATABASE",
         resetConfirm: "Are you sure you want to delete the current database and create a new one? All data will be lost!",
-        resetSuccess: "Database deleted. Enter a new password and click UNLOCK to create a new database.",
+        resetSuccess: "Database deleted. Enter a new password twice and click CREATE NEW DATABASE.",
         selectAppPlaceholder: "Select an app from the list to view code",
         showCodeBtn: "SHOW CODE",
         deleteBtn: "X",
@@ -609,6 +612,8 @@
         customModalDesc: "Specify the database file on your computer disk. The application will remember and use it on next launch.",
         customSelectFileBtn: "SELECT & SAVE DATABASE FILE",
         wrongPassword: "Wrong Master Password!",
+        passwordsMismatch: "Passwords do not match!",
+        enterPassword: "Please enter a password!",
         failedAttempts: "You failed twice — are you really the one?",
         codeChangeIn: "CODE CHANGES IN:",
         deleteConfirm: "Delete",
@@ -624,10 +629,12 @@
         header: "MATRIX-AUTH | wer. 1.9.1",
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Podaj Hasło Główne",
+        confirmPassPlaceholder: "Powtórz Hasło Główne",
         unlockBtn: "ODBLOKUJ",
+        createBtn: "ZAŁÓŻ NOWĄ BAZĘ",
         resetTooltip: "RESET DATABASE",
         resetConfirm: "Czy na pewno chcesz usunąć obecną bazę i stworzyć nową? Wszystkie dane zostaną utracone!",
-        resetSuccess: "Baza została usunięta. Wpisz nowe hasło i kliknij ODBLOKUJ, aby utworzyć nową bazę.",
+        resetSuccess: "Baza została usunięta. Wpisz dwukrotnie nowe hasło i kliknij ZAŁÓŻ NOWĄ BAZĘ.",
         selectAppPlaceholder: "Wybierz aplikację z listy, aby zobaczyć kod",
         showCodeBtn: "POKAŻ KOD",
         deleteBtn: "X",
@@ -654,6 +661,8 @@
         customModalDesc: "Wskaż plik bazy danych na dysku komputera. Aplikacja zapamięta go i użyje przy następnym uruchomieniu.",
         customSelectFileBtn: "WSKAŻ I ZAPISZ PLIK BAZY",
         wrongPassword: "Błędne Hasło Główne!",
+        passwordsMismatch: "Hasła nie są identyczne!",
+        enterPassword: "Wprowadź hasło!",
         failedAttempts: "Pomyliłeś się dwa razy — czy to na pewno Ty?",
         codeChangeIn: "ZMIANA KODU ZA:",
         deleteConfirm: "Usunąć",
@@ -669,10 +678,12 @@
         header: "MATRIX-AUTH | v. 1.9.1",
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Hauptpasswort eingeben",
+        confirmPassPlaceholder: "Hauptpasswort bestätigen",
         unlockBtn: "ENTSPERREN",
+        createBtn: "NEUE DATENBANK ERSTELLEN",
         resetTooltip: "RESET DATABASE",
         resetConfirm: "Möchten Sie die aktuelle Datenbank wirklich löschen und eine neue erstellen? Alle Daten gehen verloren!",
-        resetSuccess: "Datenbank gelöscht. Geben Sie ein neues Passwort ein und klicken Sie auf ENTSPERREN, um eine neue Datenbank zu erstellen.",
+        resetSuccess: "Datenbank gelöscht. Geben Sie zweimal ein neues Passwort ein und klicken Sie auf NEUE DATENBANK ERSTELLEN.",
         selectAppPlaceholder: "Wählen Sie eine App aus der Liste",
         showCodeBtn: "CODE ANZEIGEN",
         deleteBtn: "X",
@@ -699,6 +710,8 @@
         customModalDesc: "Geben Sie die Datenbankdatei auf Ihrer Festplatte an. Die Anwendung wird sie für den nächsten Start speichern.",
         customSelectFileBtn: "DATENBANKDATEI AUSWÄHLEN & SPEICHERN",
         wrongPassword: "Falsches Hauptpasswort!",
+        passwordsMismatch: "Passwörter stimmen nicht überein!",
+        enterPassword: "Bitte Passwort eingeben!",
         failedAttempts: "Sie haben zweimal versagt — sind Sie wirklich die richtige Person?",
         codeChangeIn: "CODE ÄNDERT SICH IN:",
         deleteConfirm: "Löschen",
@@ -714,10 +727,12 @@
         header: "MATRIX-AUTH | v. 1.9.1",
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Zadejte hlavní heslo",
+        confirmPassPlaceholder: "Potvrďte hlavní heslo",
         unlockBtn: "ODEMKNOUT",
+        createBtn: "VYTVOŘIT NOVOU DATABÁZI",
         resetTooltip: "RESET DATABASE",
         resetConfirm: "Opravdu chcete smazat stávající databázi a vytvořit novou? Všechna data budou ztracena!",
-        resetSuccess: "Databáze byla smazána. Zadejte nové heslo a kliknięte na ODEMKNOUT pro vytvoření nové databáze.",
+        resetSuccess: "Databáze byla smazána. Zadejte dvakrát nové heslo a klikněte na VYTVOŘIT NOVOU DATABÁZI.",
         selectAppPlaceholder: "Vyberte aplikaci ze seznamu",
         showCodeBtn: "ZOBRAZIT KÓD",
         deleteBtn: "X",
@@ -744,6 +759,8 @@
         customModalDesc: "Určete soubor databáze na disku počítače. Aplikace si jej zapamatuje a použije při příštím spuštění.",
         customSelectFileBtn: "VYBRAT A ULOŽIT SOUBOR DATABÁZE",
         wrongPassword: "Špatné hlavní heslo!",
+        passwordsMismatch: "Hesla se neshodují!",
+        enterPassword: "Zadejte prosím heslo!",
         failedAttempts: "Chyboval jsi dvakrát — jsi opravdu ty?",
         codeChangeIn: "KÓD SE ZMĚNÍ ZA:",
         deleteConfirm: "Smazat",
@@ -759,10 +776,12 @@
         header: "MATRIX-AUTH | ver. 1.9.1",
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Introduce la contraseña maestra",
+        confirmPassPlaceholder: "Confirma la contraseña maestra",
         unlockBtn: "DESBLOQUEAR",
+        createBtn: "CREAR NUEVA BASE DE DATOS",
         resetTooltip: "RESET DATABASE",
         resetConfirm: "¿Estás seguro de que deseas eliminar la base de datos actual y crear una nueva? ¡Se perderán todos los datos!",
-        resetSuccess: "Base de datos eliminada. Introduce una nueva contraseña y haz clic en DESBLOQUEAR para crear una nueva base de datos.",
+        resetSuccess: "Base de datos eliminada. Introduce la nueva contraseña dos veces y haz clic en CREAR NUEVA BASE DE DATOS.",
         selectAppPlaceholder: "Selecciona una aplicación de la lista para ver el código",
         showCodeBtn: "MOSTRAR CÓDIGO",
         deleteBtn: "X",
@@ -789,6 +808,8 @@
         customModalDesc: "Especifica el archivo de la base de datos en el disco. La aplicación lo recordará y usará en el próximo inicio.",
         customSelectFileBtn: "SELECCIONAR Y GUARDAR ARCHIVO",
         wrongPassword: "¡Contraseña maestra incorrecta!",
+        passwordsMismatch: "¡Las contraseñas no coinciden!",
+        enterPassword: "¡Por favor, introduce una contraseña!",
         failedAttempts: "Has fallado dos veces — ¿eres realmente tú?",
         codeChangeIn: "EL CÓDIGO CAMBIA EN:",
         deleteConfirm: "Eliminar",
@@ -804,10 +825,12 @@
         header: "MATRIX-AUTH | v. 1.9.1",
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Entrez le mot de passe principal",
+        confirmPassPlaceholder: "Confirmez le mot de passe principal",
         unlockBtn: "DÉVERROUILLER",
+        createBtn: "CRÉER UNE NOUVELLE BASE",
         resetTooltip: "RESET DATABASE",
         resetConfirm: "Êtes-vous sûr de vouloir supprimer la base de données actuelle et en créer une nouvelle ? Toutes les données seront perdues !",
-        resetSuccess: "Base de données supprimée. Entrez un nouveau mot de passe et cliquez sur DÉVERROUILLER pour créer une nouvelle base de données.",
+        resetSuccess: "Base de données supprimée. Entrez un nouveau mot de passe deux fois et cliquez sur CRÉER UNE NOUVELLE BASE.",
         selectAppPlaceholder: "Sélectionnez une application de la liste",
         showCodeBtn: "AFFICHER LE CODE",
         deleteBtn: "X",
@@ -834,6 +857,8 @@
         customModalDesc: "Spécifiez le fichier de base de données sur votre disque. L'application le mémorisera pour le prochain lancement.",
         customSelectFileBtn: "SÉLECTIONNER ET ENREGISTRER LE FICHIER",
         wrongPassword: "Mot de passe principal incorrect!",
+        passwordsMismatch: "Les mots de passe ne correspondent pas!",
+        enterPassword: "Veuillez entrer un mot de passe!",
         failedAttempts: "Vous avez échoué deux fois — êtes-vous vraiment vous?",
         codeChangeIn: "LE CODE CHANGE DANS:",
         deleteConfirm: "Supprimer",
@@ -850,6 +875,7 @@
     let currentLanguage = "en";
     let browserLanguage = "en";
     let languagePendingOnUnlock = null;
+    let isCreatingNewDb = false;
 
     function t(key) {
       return (translations[currentLanguage] && translations[currentLanguage][key]) || translations.en[key] || key;
@@ -982,6 +1008,7 @@
     function selectStorageType(type) {
       localStorage.setItem(STORAGE_TYPE_KEY, type);
       updateDBStatusUI();
+      checkDbExistsAndUpdateUI();
     }
 
     function deleteLSStorage() {
@@ -992,6 +1019,7 @@
           localStorage.setItem(STORAGE_TYPE_KEY, 'custom');
         }
         updateDBStatusUI();
+        checkDbExistsAndUpdateUI();
       }
     }
 
@@ -1001,6 +1029,7 @@
         customFileHandle = null;
         localStorage.setItem(STORAGE_TYPE_KEY, 'ls');
         updateDBStatusUI();
+        checkDbExistsAndUpdateUI();
       }
     }
 
@@ -1029,6 +1058,7 @@
           localStorage.setItem(STORAGE_TYPE_KEY, 'custom');
           hideCustomModal();
           updateDBStatusUI();
+          checkDbExistsAndUpdateUI();
         }
       } catch (err) {
         if (err.name !== 'AbortError') {
@@ -1101,6 +1131,22 @@
       vaultData._settings.language = lang;
     }
 
+    async function checkDbExistsAndUpdateUI() {
+      const rawVault = await getRawEncryptedVault();
+      const passConfirm = document.getElementById('master-pass-confirm');
+      const unlockBtn = document.getElementById('unlock-btn');
+
+      if (!rawVault) {
+        isCreatingNewDb = true;
+        if (passConfirm) passConfirm.style.display = 'block';
+        if (unlockBtn) unlockBtn.textContent = t('createBtn');
+      } else {
+        isCreatingNewDb = false;
+        if (passConfirm) passConfirm.style.display = 'none';
+        if (unlockBtn) unlockBtn.textContent = t('unlockBtn');
+      }
+    }
+
     function initializeLanguageOnAuthScreen() {
       browserLanguage = detectBrowserLanguage();
       currentLanguage = browserLanguage;
@@ -1114,6 +1160,7 @@
       applyTranslations();
       updateLangInfo();
       updateDBStatusUI();
+      checkDbExistsAndUpdateUI();
     }
 
     function applyTranslations() {
@@ -1121,6 +1168,7 @@
       const authTitle = document.getElementById('auth-title');
       const authLink = document.getElementById('auth-link');
       const masterPass = document.getElementById('master-pass');
+      const passConfirm = document.getElementById('master-pass-confirm');
       const unlockBtn = document.getElementById('unlock-btn');
       const resetBtn = document.getElementById('reset-btn');
       const addBtn = document.getElementById('add-btn');
@@ -1158,7 +1206,8 @@
       if (authLink) authLink.textContent = "GITHUB";
       if (authLink) authLink.href = GITHUB_LINK;
       if (masterPass) masterPass.placeholder = t('masterPassPlaceholder');
-      if (unlockBtn) unlockBtn.textContent = t('unlockBtn');
+      if (passConfirm) passConfirm.placeholder = t('confirmPassPlaceholder');
+      if (unlockBtn) unlockBtn.textContent = isCreatingNewDb ? t('createBtn') : t('unlockBtn');
       if (resetBtn) resetBtn.title = t('resetTooltip');
       if (addBtn) addBtn.textContent = t('addAppBtn');
       if (lockBtn) lockBtn.textContent = t('lockBtn');
@@ -1294,7 +1343,9 @@
         masterPassword = "";
         failedAttempts = 0;
         document.getElementById('master-pass').value = "";
+        document.getElementById('master-pass-confirm').value = "";
         updateDBStatusUI();
+        checkDbExistsAndUpdateUI();
         alert(t('resetSuccess'));
       }
     }
@@ -1322,16 +1373,28 @@
 
     async function unlockVault() {
       const passInput = document.getElementById('master-pass');
+      const passConfirmInput = document.getElementById('master-pass-confirm');
       masterPassword = passInput.value;
-      if (!masterPassword) return;
+
+      if (!masterPassword) {
+        alert(t('enterPassword'));
+        return;
+      }
 
       const encryptedRaw = await getRawEncryptedVault();
 
       if (!encryptedRaw) {
+        const confirmPass = passConfirmInput.value;
+        if (masterPassword !== confirmPass) {
+          alert(t('passwordsMismatch'));
+          return;
+        }
+
         vaultData = { _settings: { language: currentLanguage } };
         await saveVault();
         document.getElementById('auth-overlay').style.display = 'none';
         passInput.value = "";
+        passConfirmInput.value = "";
         renderUI();
         applyTranslations();
         updateLangInfo();
@@ -1359,6 +1422,7 @@
 
         document.getElementById('auth-overlay').style.display = 'none';
         passInput.value = "";
+        passConfirmInput.value = "";
         renderUI();
         applyTranslations();
         updateLangInfo();
@@ -1382,6 +1446,7 @@
           languageChangedBeforeUnlock = false;
           document.getElementById('auth-overlay').style.display = 'none';
           passInput.value = "";
+          passConfirmInput.value = "";
           renderUI();
           applyTranslations();
           updateLangInfo();
@@ -1420,6 +1485,7 @@
         localStorage.setItem(DB_DATE_KEY, nowIso);
       }
       updateDBStatusUI();
+      checkDbExistsAndUpdateUI();
     }
 
     function lockVault() {
