@@ -46,7 +46,6 @@ If you find this tool helpful, consider supporting my work:
 ![MATRIX-AUTH Screenshot](https://raw.githubusercontent.com/spazma/spazma.github.io/main/screens/matrix-auth.jpg)
 
 ---
----
 
 # 🇵🇱 Najważniejsze zalety i funkcja
 
@@ -68,9 +67,15 @@ If you find this tool helpful, consider supporting my work:
 
 > ⚠️ **MECHANIZM FAŁSZYWEGO HASŁA (DURESS):** Dwukrotne wpisanie błędnego (lub fałszywego) hasła powoduje przełączenie na fałszywą bazę i trwałe wyczyszczenie dotychczasowych danych. Po uaktywnieniu tego mechanizmu oryginalna baza zostaje bezpowrotnie usunięta z przeglądarki, a jedyną drogą do odzyskania dostępu jest przywrócenie danych z wcześniej utworzonej kopii zapasowej.
 
+# 🚀 Demo & Offline:
+
+### Wersja Demo i Praca Offline
+* **Wersja Online / Demo:** [https://spazma.github.io/matrix-auth/](https://spazma.github.io/matrix-auth/)
+* **Praca Offline:** Jeśli chcesz pracować w pełni offline (z wyłączeniem opcji skanowania kodów QR kamerą), po prostu skopiuj plik `index.html`, nadaj mu dowolną nazwę np.`matrix-auth.html` i otwórz go lokalnie w przeglądarce. Korzystaj i autoryzuj się śmiało! Powodzenia i pozdro dla Wymiota z Discorda :)
+  
 ---
 
-# 📜 Licencja i Wsparcie
+# 📜 License & Support
 
 Projekt jest w 100% darmowy (Free to Use) zarówno do celów prywatnych, jak i komercyjnych na licencji **MIT**.
 
@@ -78,10 +83,7 @@ Jeśli kod Ci się przydał i chcesz docenić moją pracę, możesz postawić mi
 
 <a href="https://buymeacoffee.com/spazma" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 217px !important;"></a>
 
-### Wersja Demo i Praca Offline
-* **Wersja Online / Demo:** [https://spazma.github.io/matrix-auth/](https://spazma.github.io/matrix-auth/)
-* **Praca Offline:** Jeśli chcesz pracować w pełni offline (z wyłączeniem opcji skanowania kodów QR kamerą), po prostu skopiuj plik `index.html`, nadaj mu dowolną nazwę np.`matrix-auth.html` i otwórz go lokalnie w przeglądarce. Korzystaj i autoryzuj się śmiało! Powodzenia i pozdro dla Wymiota z Discorda :)
-
+---
 
 <p align="center">
 <img width="401" height="214" alt="im1" src="https://github.com/user-attachments/assets/bbc5b3fa-c641-4384-83c0-53ffc463fc11" />
