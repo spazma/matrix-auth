@@ -104,5 +104,5 @@ Jeśli kod Ci się przydał i chcesz docenić moją pracę, możesz postawić mi
 <img width="402" height="273" alt="im2" src="https://github.com/user-attachments/assets/ca1ecea7-2ff0-4395-8ac7-0b0863fc693f" />
 <img width="402" height="328" alt="im3" src="https://github.com/user-attachments/assets/556a4a69-b347-481c-b613-e1c0603fefb8" />
 <br />
-<img width="422" height="376" alt="wAJ2r4XJUsa" src="https://github.com/user-attachments/assets/859477bf-433e-4aba-b289-c459b66c398a" />
+<img width="422" height="376" alt="zQp4mwADhbP" src="https://github.com/user-attachments/assets/1e0ec214-7b52-452c-ae47-4aaf047c8106" />
 </p>
