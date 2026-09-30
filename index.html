@@ -904,7 +904,6 @@
       return (translations[currentLanguage] && translations[currentLanguage][key]) || translations.en[key] || key;
     }
 
-    /* OBSŁUGA SPRAWDZANIA WERSJI NA GITHUBIE */
     async function checkForUpdates() {
       const vBox = document.getElementById('version-check-box');
       if (!vBox) return;
@@ -1438,11 +1437,11 @@
 
         vaultData = { _settings: { language: currentLanguage } };
         await saveVault();
+        applyTranslations();
         document.getElementById('auth-overlay').style.display = 'none';
         passInput.value = "";
         passConfirmInput.value = "";
         renderUI();
-        applyTranslations();
         updateLangInfo();
         return;
       }
@@ -1453,6 +1452,13 @@
         failedAttempts = 0;
         vaultData = decrypted;
 
+        // Synchronizacja języka
+        if (languageChangedBeforeUnlock && languagePendingOnUnlock) {
+          currentLanguage = languagePendingOnUnlock;
+        } else if (vaultData._settings && vaultData._settings.language) {
+          currentLanguage = vaultData._settings.language;
+        }
+
         if (!vaultData._settings) {
           vaultData._settings = {};
         }
@@ -1462,11 +1468,13 @@
         languagePendingOnUnlock = null;
         languageChangedBeforeUnlock = false;
 
+        // Wymuszenie aktualizacji języka w widokach przed odsłonięciem ekranu
+        applyTranslations();
+
         document.getElementById('auth-overlay').style.display = 'none';
         passInput.value = "";
         passConfirmInput.value = "";
         renderUI();
-        applyTranslations();
         updateLangInfo();
       } else {
         failedAttempts++;
@@ -1488,11 +1496,13 @@
           failedAttempts = 0;
           languagePendingOnUnlock = null;
           languageChangedBeforeUnlock = false;
+          
+          applyTranslations();
+
           document.getElementById('auth-overlay').style.display = 'none';
           passInput.value = "";
           passConfirmInput.value = "";
           renderUI();
-          applyTranslations();
           updateLangInfo();
         } else {
           alert(t('wrongPassword'));
