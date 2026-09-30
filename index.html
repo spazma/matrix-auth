@@ -248,6 +248,21 @@
       font-style: italic;
     }
 
+    .version-check-box {
+      margin-top: 15px;
+      font-size: 0.78rem;
+      color: var(--subtext);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .version-tag-green {
+      color: var(--green);
+      font-weight: bold;
+    }
+
     header {
       background: var(--header-bg); color: var(--pink); text-align: center;
       padding: 15px; font-weight: bold; font-family: monospace; font-size: 1.1rem;
@@ -478,6 +493,11 @@
         </div>
       </div>
 
+      <!-- SPRAWDZANIE WERSJI W REPO -->
+      <div class="version-check-box" id="version-check-box">
+        this version: 1.9.1 / github: checking...
+      </div>
+
     </div>
   </div>
 
@@ -562,6 +582,9 @@
   </div>
 
   <script>
+    const CURRENT_VERSION = "1.9.1";
+    const VERSION_URL = "https://raw.githubusercontent.com/spazma/matrix-auth/main/version.json";
+
     let vaultData = {};
     let masterPassword = "";
     let selectedApp = null;
@@ -577,7 +600,7 @@
 
     const translations = {
       en: {
-        header: "MATRIX-AUTH | ver. 1.9.1",
+        header: `MATRIX-AUTH | ver. ${CURRENT_VERSION}`,
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Enter Master Password",
         confirmPassPlaceholder: "Confirm Master Password",
@@ -626,7 +649,7 @@
         qrLocalWarning: "📷 QR Scanner works only in online mode (HTTPS / GitHub Pages)!\n\nOpening the file directly from disk blocks camera access on mobile devices."
       },
       pl: {
-        header: "MATRIX-AUTH | wer. 1.9.1",
+        header: `MATRIX-AUTH | wer. ${CURRENT_VERSION}`,
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Podaj Hasło Główne",
         confirmPassPlaceholder: "Powtórz Hasło Główne",
@@ -675,7 +698,7 @@
         qrLocalWarning: "📷 Skaner QR działa tylko w wersji online (HTTPS / GitHub Pages)!\n\nOtwieranie pliku bezpośrednio z dysku blokuje kamerę w przeglądarkach mobilnych."
       },
       de: {
-        header: "MATRIX-AUTH | v. 1.9.1",
+        header: `MATRIX-AUTH | v. ${CURRENT_VERSION}`,
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Hauptpasswort eingeben",
         confirmPassPlaceholder: "Hauptpasswort bestätigen",
@@ -724,7 +747,7 @@
         qrLocalWarning: "📷 Der QR-Scanner funktioniert nur im Online-Modus (HTTPS / GitHub Pages)!\n\nDas direkte Öffnen der Datei vom Datenträger blockiert den Kamerazugriff auf Mobilgeräten."
       },
       cs: {
-        header: "MATRIX-AUTH | v. 1.9.1",
+        header: `MATRIX-AUTH | v. ${CURRENT_VERSION}`,
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Zadejte hlavní heslo",
         confirmPassPlaceholder: "Potvrďte hlavní heslo",
@@ -773,7 +796,7 @@
         qrLocalWarning: "📷 QR skener funguje pouze v režimu online (HTTPS / GitHub Pages)!\n\nPřímé otevření souboru z disku blokuje přístup ke kameře na mobilních zařízeních."
       },
       es: {
-        header: "MATRIX-AUTH | ver. 1.9.1",
+        header: `MATRIX-AUTH | ver. ${CURRENT_VERSION}`,
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Introduce la contraseña maestra",
         confirmPassPlaceholder: "Confirma la contraseña maestra",
@@ -822,7 +845,7 @@
         qrLocalWarning: "📷 ¡El escáner QR solo funciona en modo en línea (HTTPS / GitHub Pages)!\n\nAbrir el archivo directamente desde el disco bloquea el acceso a la cámara en dispositivos móviles."
       },
       fr: {
-        header: "MATRIX-AUTH | v. 1.9.1",
+        header: `MATRIX-AUTH | v. ${CURRENT_VERSION}`,
         mainTitle: "MATRIX-AUTHENTICATOR",
         masterPassPlaceholder: "Entrez le mot de passe principal",
         confirmPassPlaceholder: "Confirmez le mot de passe principal",
@@ -879,6 +902,28 @@
 
     function t(key) {
       return (translations[currentLanguage] && translations[currentLanguage][key]) || translations.en[key] || key;
+    }
+
+    /* OBSŁUGA SPRAWDZANIA WERSJI NA GITHUBIE */
+    async function checkForUpdates() {
+      const vBox = document.getElementById('version-check-box');
+      if (!vBox) return;
+
+      try {
+        const res = await fetch(`${VERSION_URL}?t=${Date.now()}`);
+        if (!res.ok) throw new Error();
+
+        const data = await res.json();
+        const githubVersion = data.version;
+
+        if (githubVersion !== CURRENT_VERSION) {
+          vBox.innerHTML = `this version: ${CURRENT_VERSION} / github: ${githubVersion} <span class="version-tag-green">(update!)</span>`;
+        } else {
+          vBox.innerHTML = `this version: ${CURRENT_VERSION} / github: ${githubVersion}`;
+        }
+      } catch (err) {
+        vBox.innerHTML = `this version: ${CURRENT_VERSION} / github: --`;
+      }
     }
 
     /* OBSŁUGA INDEXEDDB DLA ZAPAMIĘTANIA FILE HANDLE */
@@ -1161,6 +1206,7 @@
       updateLangInfo();
       updateDBStatusUI();
       checkDbExistsAndUpdateUI();
+      checkForUpdates();
     }
 
     function applyTranslations() {
@@ -1371,88 +1417,88 @@
       return localStorage.getItem(DB_KEY);
     }
 
- 	async function unlockVault() {
-		  const passInput = document.getElementById('master-pass');
-		  const passConfirmInput = document.getElementById('master-pass-confirm');
-		  masterPassword = passInput.value;
+    async function unlockVault() {
+      const passInput = document.getElementById('master-pass');
+      const passConfirmInput = document.getElementById('master-pass-confirm');
+      masterPassword = passInput.value;
 
-		  if (!masterPassword) {
-			alert(t('enterPassword'));
-			return;
-		  }
+      if (!masterPassword) {
+        alert(t('enterPassword'));
+        return;
+      }
 
-		  const encryptedRaw = await getRawEncryptedVault();
+      const encryptedRaw = await getRawEncryptedVault();
 
-		  if (!encryptedRaw) {
-			const confirmPass = passConfirmInput.value;
-			if (masterPassword !== confirmPass) {
-			  alert(t('passwordsMismatch'));
-			  return;
-			}
+      if (!encryptedRaw) {
+        const confirmPass = passConfirmInput.value;
+        if (masterPassword !== confirmPass) {
+          alert(t('passwordsMismatch'));
+          return;
+        }
 
-			vaultData = { _settings: { language: currentLanguage } };
-			await saveVault();
-			document.getElementById('auth-overlay').style.display = 'none';
-			passInput.value = "";
-			passConfirmInput.value = "";
-			renderUI();
-			applyTranslations();
-			updateLangInfo();
-			return;
-		  }
+        vaultData = { _settings: { language: currentLanguage } };
+        await saveVault();
+        document.getElementById('auth-overlay').style.display = 'none';
+        passInput.value = "";
+        passConfirmInput.value = "";
+        renderUI();
+        applyTranslations();
+        updateLangInfo();
+        return;
+      }
 
-		  const decrypted = await decryptData(encryptedRaw, masterPassword);
+      const decrypted = await decryptData(encryptedRaw, masterPassword);
 
-		  if (decrypted !== null) {
-			failedAttempts = 0;
-			vaultData = decrypted;
+      if (decrypted !== null) {
+        failedAttempts = 0;
+        vaultData = decrypted;
 
-			if (!vaultData._settings) {
-			  vaultData._settings = {};
-			}
-			vaultData._settings.language = currentLanguage;
-			await saveVault();
+        if (!vaultData._settings) {
+          vaultData._settings = {};
+        }
+        vaultData._settings.language = currentLanguage;
+        await saveVault();
 
-			languagePendingOnUnlock = null;
-			languageChangedBeforeUnlock = false;
+        languagePendingOnUnlock = null;
+        languageChangedBeforeUnlock = false;
 
-			document.getElementById('auth-overlay').style.display = 'none';
-			passInput.value = "";
-			passConfirmInput.value = "";
-			renderUI();
-			applyTranslations();
-			updateLangInfo();
-		  } else {
-			failedAttempts++;
+        document.getElementById('auth-overlay').style.display = 'none';
+        passInput.value = "";
+        passConfirmInput.value = "";
+        renderUI();
+        applyTranslations();
+        updateLangInfo();
+      } else {
+        failedAttempts++;
 
-			if (failedAttempts >= 2) {
-			  alert(t('failedAttempts'));
+        if (failedAttempts >= 2) {
+          alert(t('failedAttempts'));
 
-			  vaultData = {
-				_settings: { language: currentLanguage },
-				"Onet": "JBSWY3DPEHPK3PXP",
-				"Testing": "KZXW633PN5XW653B",
-				"Bank": "N7YBDP87BDHZAWPI",
-				"Account2": "98JU650UBPO12CMQ"
-			  };
+          vaultData = {
+            _settings: { language: currentLanguage },
+            "Onet": "JBSWY3DPEHPK3PXP",
+            "Testing": "KZXW633PN5XW653B",
+            "Bank": "N7YBDP87BDHZAWPI",
+            "Account2": "98JU650UBPO12CMQ"
+          };
 
-			  masterPassword = "password123";
-			  await saveVault();
+          masterPassword = "password123";
+          await saveVault();
 
-			  failedAttempts = 0;
-			  languagePendingOnUnlock = null;
-			  languageChangedBeforeUnlock = false;
-			  document.getElementById('auth-overlay').style.display = 'none';
-			  passInput.value = "";
-			  passConfirmInput.value = "";
-			  renderUI();
-			  applyTranslations();
-			  updateLangInfo();
-			} else {
-			  alert(t('wrongPassword'));
-			}
-		  }
-		}
+          failedAttempts = 0;
+          languagePendingOnUnlock = null;
+          languageChangedBeforeUnlock = false;
+          document.getElementById('auth-overlay').style.display = 'none';
+          passInput.value = "";
+          passConfirmInput.value = "";
+          renderUI();
+          applyTranslations();
+          updateLangInfo();
+        } else {
+          alert(t('wrongPassword'));
+        }
+      }
+    }
 
     async function saveVault() {
       const enc = await encryptData(vaultData, masterPassword);
