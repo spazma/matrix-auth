@@ -558,8 +558,8 @@
       </p>
 
       <div style="display: flex; flex-direction: column; gap: 12px;">
-        <button id="export-btn" class="btn-add" style="width: 100%;" onclick="exportVault()">EXPORT (Save vault.enc)</button>
-        <button id="share-btn" class="btn-primary" style="width: 100%; background: var(--orange);" onclick="shareVault()">EMAIL / SHARE (Send vault.enc)</button>
+        <button id="export-btn" class="btn-add" style="width: 100%;" onclick="exportVault()">EXPORT (Save matrix.enc)</button>
+        <button id="share-btn" class="btn-primary" style="width: 100%; background: var(--orange);" onclick="shareVault()">EMAIL / SHARE (Send matrix.enc)</button>
         <button id="import-btn" class="btn-disk" style="width: 100%;" onclick="showImportPasswordModal()">IMPORT (Select file)</button>
         <button id="backup-close-btn" style="background: #45475a; color: #fff; width: 100%; margin-top: 10px;" onclick="hideBackupModal()">CLOSE</button>
       </div>
@@ -582,7 +582,7 @@
   </div>
 
   <script>
-    const CURRENT_VERSION = "1.9.1";
+    const CURRENT_VERSION = "1.9.2";
     const VERSION_URL = "https://raw.githubusercontent.com/spazma/matrix-auth/main/version.json";
 
     let vaultData = {};
@@ -623,8 +623,8 @@
         cancelBtn: "CANCEL",
         backupTitle: "Database Backup",
         backupDesc: "You can save the encrypted database to a file, share it via email, or import an existing backup.",
-        exportBtn: "EXPORT (Save vault.enc)",
-        shareBtn: "EMAIL / SHARE (Send vault.enc)",
+        exportBtn: "EXPORT (Save matrix.enc)",
+        shareBtn: "EMAIL / SHARE (Send matrix.enc)",
         importBtn: "IMPORT (Select file)",
         closeBtn: "CLOSE",
         importPassTitle: "Decrypt Database",
@@ -672,8 +672,8 @@
         cancelBtn: "ANULUJ",
         backupTitle: "Kopia Bazy Danych",
         backupDesc: "Możesz zapisać zaszyfrowaną bazę, wysłać ją e-mailem lub wgrać kopię zapasową.",
-        exportBtn: "EXPORT (Zapisz plik vault.enc)",
-        shareBtn: "E-MAIL / UDOSTĘPNIJ (Wyślij vault.enc)",
+        exportBtn: "EXPORT (Zapisz plik matrix.enc)",
+        shareBtn: "E-MAIL / UDOSTĘPNIJ (Wyślij matrix.enc)",
         importBtn: "IMPORT (Wybierz plik z dysku)",
         closeBtn: "ZAMKNIJ",
         importPassTitle: "Odszyfrowanie Bazy",
@@ -721,8 +721,8 @@
         cancelBtn: "ABBRECHEN",
         backupTitle: "Datenbank-Sicherung",
         backupDesc: "Speichern Sie Ihre verschlüsselte Datenbank, teilen Sie sie per E-Mail oder stellen Sie sie wieder her.",
-        exportBtn: "EXPORT (vault.enc speichern)",
-        shareBtn: "E-MAIL / TEILEN (vault.enc senden)",
+        exportBtn: "EXPORT (matrix.enc speichern)",
+        shareBtn: "E-MAIL / TEILEN (matrix.enc senden)",
         importBtn: "IMPORT (Datei auswählen)",
         closeBtn: "SCHLIESSEN",
         importPassTitle: "Datenbank entschlüsseln",
@@ -770,8 +770,8 @@
         cancelBtn: "ZRUŠIT",
         backupTitle: "Zálohování databáze",
         backupDesc: "Můžete uložit zašifrovanou databázi, sdílet ji e-mailem nebo importovat zálohu.",
-        exportBtn: "EXPORT (Uložit vault.enc)",
-        shareBtn: "E-MAIL / SDÍLET (Odeslat vault.enc)",
+        exportBtn: "EXPORT (Uložit matrix.enc)",
+        shareBtn: "E-MAIL / SDÍLET (Odeslat matrix.enc)",
         importBtn: "IMPORT (Vybrat soubor)",
         closeBtn: "ZAVŘÍT",
         importPassTitle: "Dešifrování databáze",
@@ -819,8 +819,8 @@
         cancelBtn: "CANCELAR",
         backupTitle: "Copia de seguridad de la base de datos",
         backupDesc: "Puedes guardar la base de datos cifrada, enviarla por correo o importar una copia.",
-        exportBtn: "EXPORTAR (Guardar vault.enc)",
-        shareBtn: "CORREO / COMPARTIR (Enviar vault.enc)",
+        exportBtn: "EXPORTAR (Guardar matrix.enc)",
+        shareBtn: "CORREO / COMPARTIR (Enviar matrix.enc)",
         importBtn: "IMPORTAR (Seleccionar archivo)",
         closeBtn: "CERRAR",
         importPassTitle: "Descifrar base de datos",
@@ -868,8 +868,8 @@
         cancelBtn: "ANNULER",
         backupTitle: "Sauvegarde de la base de données",
         backupDesc: "Vous pouvez enregistrer la base de données chiffrée, la partager par email ou importer une sauvegarde.",
-        exportBtn: "EXPORT (Enregistrer vault.enc)",
-        shareBtn: "EMAIL / PARTAGER (Envoyer vault.enc)",
+        exportBtn: "EXPORT (Enregistrer matrix.enc)",
+        shareBtn: "EMAIL / PARTAGER (Envoyer matrix.enc)",
         importBtn: "IMPORT (Sélectionner un fichier)",
         closeBtn: "SCHLIESSEN",
         importPassTitle: "Déchiffrer la base de données",
@@ -1674,7 +1674,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "vault.enc";
+      a.download = "matrix.enc";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -1685,7 +1685,7 @@
     async function shareVault() {
       try {
         const encryptedData = await encryptData(vaultData, masterPassword);
-        const file = new File([encryptedData], "vault.enc", { type: "application/json" });
+        const file = new File([encryptedData], "matrix.enc", { type: "application/json" });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
