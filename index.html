@@ -8,381 +8,429 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.1.4/otpauth.umd.min.js"></script>
   <!-- Skrypt do skanowania kodów QR z kamery -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  <style>
-    :root {
-      --bg: #181825;
-      --card-bg: rgba(30, 31, 48, 0.65);
-      --card-hover: rgba(50, 52, 74, 0.8);
-      --header-bg: rgba(12, 12, 20, 0.45);
-      --footer-bg: rgba(12, 12, 20, 0.55);
-      --text: #cdd6f4;
-      --pink: #f38ba8;
-      --green: #a6e3a1;
-      --blue: #89b4fa;
-      --orange: #fab387;
-      --subtext: #a6adc8;
+<style>
+  :root {
+    --bg: #181825;
+    --card-bg: rgba(30, 31, 48, 0.65);
+    --card-hover: rgba(50, 52, 74, 0.8);
+    --header-bg: rgba(12, 12, 20, 0.45);
+    --footer-bg: rgba(12, 12, 20, 0.55);
+    --text: #cdd6f4;
+    --pink: #f38ba8;
+    --green: #a6e3a1;
+    --blue: #89b4fa;
+    --orange: #fab387;
+    --subtext: #a6adc8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background-color: #050508;
+    color: var(--text);
+  }
+
+  body { display: flex; flex-direction: column; position: relative; }
+
+  #matrix-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  #auth-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(10, 10, 15, 0.92); display: flex; align-items: center; justify-content: center; z-index: 100;
+    backdrop-filter: blur(6px);
+    padding: 15px;
+  }
+
+  .auth-box {
+    background: rgba(30, 30, 46, 0.95); padding: 25px; border-radius: 12px;
+    width: 100%; max-width: 520px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+    max-height: 90vh; overflow-y: auto; border: 1px solid #45475a;
+  }
+
+  .auth-box h2 { color: var(--pink); margin-bottom: 20px; font-size: 1.2rem; }
+
+  .auth-header {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
+  }
+
+  .auth-title-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .auth-title-line h2 {
+    margin: 0;
+    color: var(--pink);
+    font-size: 1.1rem;
+    white-space: nowrap;
+  }
+
+  .auth-title-line span {
+    color: var(--subtext);
+    font-size: 0.9rem;
+  }
+
+  .auth-title-line a {
+    color: var(--blue);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .auth-title-line a:hover {
+    color: var(--green);
+    text-decoration: underline;
+  }
+
+  .lang-selector {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+
+  .lang-btn {
+    background: transparent;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    opacity: 0.85;
+    min-width: 32px;
+    height: 32px;
+  }
+
+  .lang-btn.active {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 1px rgba(137, 180, 250, 0.4);
+    opacity: 1;
+  }
+
+  .lang-btn:hover {
+    transform: translateY(-1px);
+    opacity: 1;
+  }
+
+  input[type="password"], input[type="text"] {
+    width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px;
+    border: 1px solid #45475a; background: #11111b; color: #fff; font-size: 16px;
+  }
+
+  button {
+    cursor: pointer; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; padding: 12px 20px;
+    transition: all 0.2s ease;
+    touch-action: manipulation;
+  }
+  button:hover { opacity: 0.9; transform: scale(0.98); }
+
+  /* Przycisk logowania / główny niebieski */
+  .btn-primary { background: var(--blue); color: #11111b; width: 100%; }
+  
+  /* DODAJ APKĘ (Zielony z wersji GitHub) */
+  .btn-add { background: var(--green); color: #11111b; flex: 2; }
+  .btn-add:hover { background: #95d490; }
+
+  /* Pozostałe przyciski akcji */
+  .btn-disk { background: var(--blue); color: #11111b; padding: 12px 18px; font-size: 1.1rem; }
+  .btn-lock { background: var(--pink); color: #11111b; flex: 1; }
+
+  /* Styl X / Usuwania (Różowy akcent jak w GitHub) */
+  .btn-del {
+    background: rgba(243, 139, 168, 0.25);
+    color: var(--pink);
+    border: 1px solid var(--pink);
+    border-radius: 6px;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+  .btn-del:hover {
+    background: var(--pink);
+    color: #11111b;
+  }
+
+  /* Styl SHOW CODE oraz Ikony Trybu (Niebieski z wersji GitHub) */
+  .btn-show,
+  .btn-opt,
+  .btn-mode {
+    background-color: var(--blue);
+    color: #11111b;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-show:hover,
+  .btn-opt:hover,
+  .btn-mode:hover {
+    background-color: #79a3ea;
+  }
+
+  /* SEKCJA BAZY DANYCH POD OKNEM LOGOWANIA */
+  .db-status-container {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px dashed #45475a;
+    text-align: left;
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .db-location-box {
+    background: rgba(17, 17, 27, 0.7);
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+  }
+
+  .db-location-box.inactive {
+    opacity: 0.45;
+  }
+
+  .db-location-box.active {
+    border-color: var(--green);
+    background: rgba(24, 30, 40, 0.8);
+    opacity: 1;
+  }
+
+  .db-info-left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .db-title {
+    font-weight: bold;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .db-check {
+    color: var(--green);
+    font-size: 1rem;
+  }
+
+  .db-date {
+    font-size: 0.75rem;
+    color: var(--subtext);
+  }
+
+  .db-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-db-text {
+    background: transparent;
+    border: 1px solid var(--pink);
+    color: var(--pink);
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+  }
+  .btn-db-text:hover {
+    background: var(--pink);
+    color: #11111b;
+  }
+
+  .btn-db-select {
+    background: var(--blue);
+    color: #11111b;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+  }
+
+  .not-supported-tag {
+    font-size: 0.72rem;
+    color: var(--orange);
+    font-style: italic;
+  }
+
+  .version-check-box {
+    margin-top: 15px;
+    font-size: 0.78rem;
+    color: var(--subtext);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .version-tag-green {
+    color: var(--green);
+    font-weight: bold;
+  }
+
+  header {
+    background: var(--header-bg); color: var(--pink); text-align: center;
+    padding: 15px; font-weight: bold; font-family: monospace; font-size: 1.1rem;
+    flex-shrink: 0; box-shadow: 0 2px 12px rgba(0,0,0,0.4); z-index: 10;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+    z-index: 5;
+    scrollbar-width: thin;
+    scrollbar-color: #313244 transparent;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  main::-webkit-scrollbar { width: 4px; }
+  main::-webkit-scrollbar-track { background: transparent; margin: 6px 0; }
+  main::-webkit-scrollbar-thumb { background: #232433; border-radius: 20px; }
+
+  /* Obramowanie karty z wersji GitHub */
+  .account-card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  @media (min-width: 601px) {
+    .account-card:hover {
+      background: var(--card-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
     }
+  }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+  .account-card.active {
+    border: 1px solid var(--green);
+    background: rgba(35, 45, 55, 0.85);
+  }
 
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      background-color: #050508;
-      color: var(--text);
-    }
+  .account-name { font-weight: bold; font-size: 1.1rem; color: #ffffff;}
+  .card-actions { display: flex; gap: 8px; align-items: center; }
 
-    body { display: flex; flex-direction: column; position: relative; }
+  @media (max-width: 600px) {
+    .account-card { cursor: default; }
+    .btn-show { padding: 10px 16px; font-size: 0.9rem; }
+    .btn-opt { padding: 10px 12px; font-size: 0.9rem; }
+  }
 
-    #matrix-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      opacity: 0.55;
-      pointer-events: none;
-    }
+  footer {
+    background: var(--footer-bg); padding: 15px; text-align: center;
+    flex-shrink: 0; border-top: 1px solid rgba(255, 255, 255, 0.1); z-index: 10;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
 
-    #auth-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(10, 10, 15, 0.92); display: flex; align-items: center; justify-content: center; z-index: 100;
-      backdrop-filter: blur(6px);
-      padding: 15px;
-    }
+  .code-display-box {
+    background: rgba(18, 18, 28, 0.65); border-radius: 8px; padding: 10px;
+    margin-bottom: 10px; max-width: 600px; margin-left: auto; margin-right: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1); min-height: 80px; display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    backdrop-filter: blur(4px);
+  }
 
-    .auth-box {
-      background: rgba(30, 30, 46, 0.95); padding: 25px; border-radius: 12px;
-      width: 100%; max-width: 520px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.8);
-      max-height: 90vh; overflow-y: auto; border: 1px solid #45475a;
-    }
+  .fade-animate {
+    transition: opacity 0.15s ease-in-out;
+    opacity: 1;
+  }
+  .fade-out { opacity: 0; }
 
-    .auth-box h2 { color: var(--pink); margin-bottom: 20px; font-size: 1.2rem; }
+  .active-app-title { font-size: 0.85rem; color: var(--blue); text-transform: uppercase; letter-spacing: 1px; }
+  .active-code {
+    font-family: monospace; font-size: 2.2rem; font-weight: bold; color: var(--green);
+    letter-spacing: 4px; margin: 2px 0;
+    text-shadow: 0 0 10px rgba(166, 227, 161, 0.3);
+  }
+  .placeholder-text { color: var(--blue); font-style: italic; font-size: 0.95rem; }
 
-    .auth-header {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      margin-bottom: 25px;
-    }
+  .timer-text { color: var(--orange); font-weight: bold; font-size: 0.85rem; }
+  .actions { display: flex; gap: 10px; max-width: 600px; margin: 0 auto; align-items: center; }
 
-    .auth-title-line {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 120;
+    padding: 15px;
+    backdrop-filter: blur(5px);
+  }
 
-    .auth-title-line h2 {
-      margin: 0;
-      color: var(--pink);
-      font-size: 1.1rem;
-      white-space: nowrap;
-    }
+  .lang-info {
+    font-size: 0.75rem;
+    color: var(--subtext);
+    margin-top: 8px;
+    font-style: italic;
+  }
 
-    .auth-title-line span {
-      color: var(--subtext);
-      font-size: 0.9rem;
-    }
+  #qr-reader {
+    width: 100% !important;
+    max-width: 320px;
+    margin: 0 auto 15px auto;
+    border: none !important;
+    min-height: 240px;
+    background-color: #000;
+    border-radius: 12px;
+    overflow: hidden;
+  }
 
-    .auth-title-line a {
-      color: var(--blue);
-      text-decoration: none;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .auth-title-line a:hover {
-      color: var(--green);
-      text-decoration: underline;
-    }
-
-    .lang-selector {
-      display: flex;
-      gap: 6px;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      flex-shrink: 0;
-    }
-
-    .lang-btn {
-      background: transparent;
-      border: 2px solid #45475a;
-      border-radius: 6px;
-      padding: 4px 6px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-      opacity: 0.85;
-      min-width: 32px;
-      height: 32px;
-    }
-
-    .lang-btn.active {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 1px rgba(137, 180, 250, 0.4);
-      opacity: 1;
-    }
-
-    .lang-btn:hover {
-      transform: translateY(-1px);
-      opacity: 1;
-    }
-
-    input[type="password"], input[type="text"] {
-      width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px;
-      border: 1px solid #45475a; background: #11111b; color: #fff; font-size: 16px;
-    }
-
-    button {
-      cursor: pointer; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; padding: 12px 20px;
-      transition: all 0.2s ease;
-      touch-action: manipulation;
-    }
-    button:hover { opacity: 0.9; transform: scale(0.98); }
-
-    .btn-primary { background: var(--blue); color: #11111b; width: 100%; }
-    .btn-add { background: var(--green); color: #11111b; flex: 2; }
-    .btn-disk { background: var(--blue); color: #11111b; padding: 12px 18px; font-size: 1.1rem; }
-    .btn-lock { background: var(--pink); color: #11111b; flex: 1; }
-    .btn-del {
-      background: rgba(243, 139, 168, 0.25); color: var(--pink);
-      border: 1px solid var(--pink); padding: 6px 12px; font-size: 0.8rem;
-    }
-    .btn-del:hover { background: var(--pink); color: #11111b; }
-
-    .btn-show { background: var(--blue); color: #11111b; padding: 8px 14px; font-size: 0.85rem; }
-
-    /* SEKCJA BAZY DANYCH POD OKNEM LOGOWANIA */
-    .db-status-container {
-      margin-top: 20px;
-      padding-top: 15px;
-      border-top: 1px dashed #45475a;
-      text-align: left;
-      font-size: 0.85rem;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .db-location-box {
-      background: rgba(17, 17, 27, 0.7);
-      border: 1px solid #313244;
-      border-radius: 8px;
-      padding: 10px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: all 0.2s ease;
-    }
-
-    .db-location-box.inactive {
-      opacity: 0.45;
-    }
-
-    .db-location-box.active {
-      border-color: var(--green);
-      background: rgba(24, 30, 40, 0.8);
-      opacity: 1;
-    }
-
-    .db-info-left {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .db-title {
-      font-weight: bold;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .db-check {
-      color: var(--green);
-      font-size: 1rem;
-    }
-
-    .db-date {
-      font-size: 0.75rem;
-      color: var(--subtext);
-    }
-
-    .db-actions-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-db-text {
-      background: transparent;
-      border: 1px solid var(--pink);
-      color: var(--pink);
-      padding: 4px 8px;
-      font-size: 0.75rem;
-      border-radius: 4px;
-    }
-    .btn-db-text:hover {
-      background: var(--pink);
-      color: #11111b;
-    }
-
-    .btn-db-select {
-      background: var(--blue);
-      color: #11111b;
-      padding: 4px 8px;
-      font-size: 0.75rem;
-      border-radius: 4px;
-    }
-
-    .not-supported-tag {
-      font-size: 0.72rem;
-      color: var(--orange);
-      font-style: italic;
-    }
-
-    .version-check-box {
-      margin-top: 15px;
-      font-size: 0.78rem;
-      color: var(--subtext);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .version-tag-green {
-      color: var(--green);
-      font-weight: bold;
-    }
-
-    header {
-      background: var(--header-bg); color: var(--pink); text-align: center;
-      padding: 15px; font-weight: bold; font-family: monospace; font-size: 1.1rem;
-      flex-shrink: 0; box-shadow: 0 2px 12px rgba(0,0,0,0.4); z-index: 10;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    main {
-      flex: 1;
-      overflow-y: auto;
-      padding: 15px;
-      max-width: 600px;
-      margin: 0 auto;
-      width: 100%;
-      z-index: 5;
-      scrollbar-width: thin;
-      scrollbar-color: #313244 transparent;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    main::-webkit-scrollbar { width: 4px; }
-    main::-webkit-scrollbar-track { background: transparent; margin: 6px 0; }
-    main::-webkit-scrollbar-thumb { background: #232433; border-radius: 20px; }
-
-    .account-card {
-      background: var(--card-bg); border-radius: 8px; padding: 15px;
-      margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
-      transition: all 0.2s ease-in-out; border: 1px solid rgba(255,255,255,0.08); cursor: pointer;
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-    }
-
-    @media (min-width: 601px) {
-      .account-card:hover {
-        background: var(--card-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.6);
-      }
-    }
-
-    .account-card.active {
-      border: 1px solid var(--green);
-      background: rgba(35, 45, 55, 0.85);
-    }
-
-    .account-name { font-weight: bold; font-size: 1.1rem; }
-    .card-actions { display: flex; gap: 8px; align-items: center; }
-
-    @media (max-width: 600px) {
-      .account-card { cursor: default; }
-      .btn-show { padding: 10px 16px; font-size: 0.9rem; }
-      .btn-del { padding: 10px 12px; font-size: 0.9rem; }
-    }
-
-    footer {
-      background: var(--footer-bg); padding: 15px; text-align: center;
-      flex-shrink: 0; border-top: 1px solid rgba(255, 255, 255, 0.1); z-index: 10;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-
-    .code-display-box {
-      background: rgba(18, 18, 28, 0.65); border-radius: 8px; padding: 10px;
-      margin-bottom: 10px; max-width: 600px; margin-left: auto; margin-right: auto;
-      border: 1px solid rgba(255, 255, 255, 0.1); min-height: 80px; display: flex; flex-direction: column;
-      justify-content: center; align-items: center;
-      backdrop-filter: blur(4px);
-    }
-
-    .fade-animate {
-      transition: opacity 0.15s ease-in-out;
-      opacity: 1;
-    }
-    .fade-out { opacity: 0; }
-
-    .active-app-title { font-size: 0.85rem; color: var(--blue); text-transform: uppercase; letter-spacing: 1px; }
-    .active-code {
-      font-family: monospace; font-size: 2.2rem; font-weight: bold; color: var(--green);
-      letter-spacing: 4px; margin: 2px 0;
-      text-shadow: 0 0 10px rgba(166, 227, 161, 0.3);
-    }
-    .placeholder-text { color: #89b4fa; font-style: italic; font-size: 0.95rem; }
-
-    .timer-text { color: var(--orange); font-weight: bold; font-size: 0.85rem; }
-    .actions { display: flex; gap: 10px; max-width: 600px; margin: 0 auto; align-items: center; }
-
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 120;
-      padding: 15px;
-      backdrop-filter: blur(5px);
-    }
-
-    .lang-info {
-      font-size: 0.75rem;
-      color: var(--subtext);
-      margin-top: 8px;
-      font-style: italic;
-    }
-
-    #qr-reader {
-      width: 100% !important;
-      max-width: 320px;
-      margin: 0 auto 15px auto;
-      border: none !important;
-      min-height: 240px;
-      background-color: #000;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    #qr-reader video {
-      width: 100% !important;
-      height: 240px !important;
-      object-fit: cover !important;
-      border-radius: 12px;
-    }
-  </style>
+  #qr-reader video {
+    width: 100% !important;
+    height: 240px !important;
+    object-fit: cover !important;
+    border-radius: 12px;
+  }
+</style>
 </head>
 <body>
 
@@ -453,7 +501,7 @@
       <input type="password" id="master-pass-confirm" placeholder="Confirm Master Password" style="display: none;" onkeydown="if(event.key === 'Enter') unlockVault()">
       <div style="display: flex; gap: 10px;">
         <button id="unlock-btn" class="btn-primary" style="flex: 1;" onclick="unlockVault()">UNLOCK</button>
-        <button id="reset-btn" class="btn-del" style="padding: 12px 16px; font-size: 1.1rem;" title="RESET DATABASE" onclick="resetDatabase()">🗑️</button>
+        <button id="reset-btn" class="btn-del" style="width: auto; padding: 12px 16px; font-size: 1.1rem;" title="RESET DATABASE" onclick="resetDatabase()">🗑️️</button>
       </div>
       <div class="lang-info" id="lang-info"></div>
 
@@ -519,6 +567,21 @@
     </div>
   </footer>
 
+  <!-- MODAL - OPCJE POZYCJI -->
+  <div id="options-modal" class="modal-overlay">
+    <div class="auth-box">
+      <h3 id="options-modal-title" style="margin-bottom: 5px; color: var(--blue);">Account Options</h3>
+      <p id="options-target-name" style="font-size: 1rem; color: var(--pink); font-weight: bold; margin-bottom: 20px;"></p>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button id="opt-rename-btn" class="btn-primary" onclick="renameCurrentAccount()">RENAME</button>
+        <button id="opt-move-up-btn" class="btn-add" style="background: var(--blue);" onclick="moveCurrentAccount('up')">MOVE UP ⬆️</button>
+        <button id="opt-move-down-btn" class="btn-add" style="background: var(--blue);" onclick="moveCurrentAccount('down')">MOVE DOWN ⬇️</button>
+        <button id="opt-delete-btn" class="btn-del" onclick="deleteCurrentAccount()">DELETE</button>
+        <button id="options-modal-cancel" style="background: #45475a; color: #fff; width: 100%; margin-top: 5px;" onclick="hideOptionsModal()">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL - CUSTOM LOCALIZATION -->
   <div id="custom-modal" class="modal-overlay">
     <div class="auth-box">
@@ -582,12 +645,13 @@
   </div>
 
   <script>
-    const CURRENT_VERSION = "1.9.2";
+    const CURRENT_VERSION = "1.9.3";
     const VERSION_URL = "https://raw.githubusercontent.com/spazma/matrix-auth/main/version.json";
 
     let vaultData = {};
     let masterPassword = "";
     let selectedApp = null;
+    let targetOptionApp = null;
     let failedAttempts = 0;
     let languageChangedBeforeUnlock = false;
     let html5QrCode = null;
@@ -612,7 +676,8 @@
         resetSuccess: "Database deleted. Enter a new password twice and click CREATE NEW DATABASE.",
         selectAppPlaceholder: "Select an app from the list to view code",
         showCodeBtn: "SHOW CODE",
-        deleteBtn: "X",
+        optionsBtn: "⚙️",
+        deleteBtn: "DELETE",
         addAppBtn: "+ ADD APP",
         backupBtn: "💾",
         lockBtn: "CLOSE",
@@ -635,6 +700,11 @@
         customModalTitle: "Custom Localization Options",
         customModalDesc: "Specify the database file on your computer disk. The application will remember and use it on next launch.",
         customSelectFileBtn: "SELECT & SAVE DATABASE FILE",
+        optionsModalTitle: "Account Options",
+        renameBtn: "RENAME",
+        moveUpBtn: "MOVE UP",
+        moveDownBtn: "MOVE DOWN",
+        renamePrompt: "Enter new name for account:",
         wrongPassword: "Wrong Master Password!",
         passwordsMismatch: "Passwords do not match!",
         enterPassword: "Please enter a password!",
@@ -661,7 +731,8 @@
         resetSuccess: "Baza została usunięta. Wpisz dwukrotnie nowe hasło i kliknij ZAŁÓŻ NOWĄ BAZĘ.",
         selectAppPlaceholder: "Wybierz aplikację z listy, aby zobaczyć kod",
         showCodeBtn: "POKAŻ KOD",
-        deleteBtn: "X",
+        optionsBtn: "⚙️",
+        deleteBtn: "USUŃ",
         addAppBtn: "+ DODAJ APKĘ",
         backupBtn: "💾",
         lockBtn: "ZAMKNIJ",
@@ -684,6 +755,11 @@
         customModalTitle: "Opcje Własnej Lokalizacji Bazy",
         customModalDesc: "Wskaż plik bazy danych na dysku komputera. Aplikacja zapamięta go i użyje przy następnym uruchomieniu.",
         customSelectFileBtn: "WSKAŻ I ZAPISZ PLIK BAZY",
+        optionsModalTitle: "Opcje Konta",
+        renameBtn: "ZMIANA NAZWY",
+        moveUpBtn: "PRZENIEŚ W GÓRĘ",
+        moveDownBtn: "PRZENIEŚ W DÓŁ",
+        renamePrompt: "Podaj nową nazwę dla konta:",
         wrongPassword: "Błędne Hasło Główne!",
         passwordsMismatch: "Hasła nie są identyczne!",
         enterPassword: "Wprowadź hasło!",
@@ -710,7 +786,8 @@
         resetSuccess: "Datenbank gelöscht. Geben Sie zweimal ein neues Passwort ein und klicken Sie auf NEUE DATENBANK ERSTELLEN.",
         selectAppPlaceholder: "Wählen Sie eine App aus der Liste",
         showCodeBtn: "CODE ANZEIGEN",
-        deleteBtn: "X",
+        optionsBtn: "⚙️",
+        deleteBtn: "LÖSCHEN",
         addAppBtn: "+ APP HINZUFÜGEN",
         backupBtn: "💾",
         lockBtn: "SCHLIESSEN",
@@ -733,6 +810,11 @@
         customModalTitle: "Optionen für benutzerdefinierten Speicherort",
         customModalDesc: "Geben Sie die Datenbankdatei auf Ihrer Festplatte an. Die Anwendung wird sie für den nächsten Start speichern.",
         customSelectFileBtn: "DATENBANKDATEI AUSWÄHLEN & SPEICHERN",
+        optionsModalTitle: "Konto-Optionen",
+        renameBtn: "UMBENENNEN",
+        moveUpBtn: "NACH OBEN",
+        moveDownBtn: "NACH UNTEN",
+        renamePrompt: "Geben Sie einen neuen Namen für das Konto ein:",
         wrongPassword: "Falsches Hauptpasswort!",
         passwordsMismatch: "Passwörter stimmen nicht überein!",
         enterPassword: "Bitte Passwort eingeben!",
@@ -759,7 +841,8 @@
         resetSuccess: "Databáze byla smazána. Zadejte dvakrát nové heslo a klikněte na VYTVOŘIT NOVOU DATABÁZI.",
         selectAppPlaceholder: "Vyberte aplikaci ze seznamu",
         showCodeBtn: "ZOBRAZIT KÓD",
-        deleteBtn: "X",
+        optionsBtn: "⚙️",
+        deleteBtn: "SMAZAT",
         addAppBtn: "+ PŘIDAT APLIKACI",
         backupBtn: "💾",
         lockBtn: "ZAVŘÍT",
@@ -782,6 +865,11 @@
         customModalTitle: "Možnosti vlastního umístění",
         customModalDesc: "Určete soubor databáze na disku počítače. Aplikace si jej zapamatuje a použije při příštím spuštění.",
         customSelectFileBtn: "VYBRAT A ULOŽIT SOUBOR DATABÁZE",
+        optionsModalTitle: "Možnosti účtu",
+        renameBtn: "PŘEJMENOVAT",
+        moveUpBtn: "POSUNOUT NAHORU",
+        moveDownBtn: "POSUNOUT DOLŮ",
+        renamePrompt: "Zadejte nový název účtu:",
         wrongPassword: "Špatné hlavní heslo!",
         passwordsMismatch: "Hesla se neshodují!",
         enterPassword: "Zadejte prosím heslo!",
@@ -808,7 +896,8 @@
         resetSuccess: "Base de datos eliminada. Introduce la nueva contraseña dos veces y haz clic en CREAR NUEVA BASE DE DATOS.",
         selectAppPlaceholder: "Selecciona una aplicación de la lista para ver el código",
         showCodeBtn: "MOSTRAR CÓDIGO",
-        deleteBtn: "X",
+        optionsBtn: "⚙️",
+        deleteBtn: "ELIMINAR",
         addAppBtn: "+ AÑADIR APP",
         backupBtn: "💾",
         lockBtn: "CERRAR",
@@ -831,6 +920,11 @@
         customModalTitle: "Opciones de ubicación personalizada",
         customModalDesc: "Especifica el archivo de la base de datos en el disco. La aplicación lo recordará y usará en el próximo inicio.",
         customSelectFileBtn: "SELECCIONAR Y GUARDAR ARCHIVO",
+        optionsModalTitle: "Opciones de la cuenta",
+        renameBtn: "CAMBIAR NOMBRE",
+        moveUpBtn: "MOVER ARRIBA",
+        moveDownBtn: "MOVER ABAJO",
+        renamePrompt: "Introduce el nuevo nombre de la cuenta:",
         wrongPassword: "¡Contraseña maestra incorrecta!",
         passwordsMismatch: "¡Las contraseñas no coinciden!",
         enterPassword: "¡Por favor, introduce una contraseña!",
@@ -857,7 +951,8 @@
         resetSuccess: "Base de données supprimée. Entrez un nouveau mot de passe deux fois et cliquez sur CRÉER UNE NOUVELLE BASE.",
         selectAppPlaceholder: "Sélectionnez une application de la liste",
         showCodeBtn: "AFFICHER LE CODE",
-        deleteBtn: "X",
+        optionsBtn: "⚙️",
+        deleteBtn: "SUPPRIMER",
         addAppBtn: "+ AJOUTER APPLICATION",
         backupBtn: "💾",
         lockBtn: "FERMER",
@@ -871,7 +966,7 @@
         exportBtn: "EXPORT (Enregistrer matrix.enc)",
         shareBtn: "EMAIL / PARTAGER (Envoyer matrix.enc)",
         importBtn: "IMPORT (Sélectionner un fichier)",
-        closeBtn: "SCHLIESSEN",
+        closeBtn: "FERMER",
         importPassTitle: "Déchiffrer la base de données",
         importPassDesc: "Entrez le mot de passe principal utilisé pour chiffrer le fichier:",
         importPassPlaceholder: "Mot de passe principal pour le fichier",
@@ -880,6 +975,11 @@
         customModalTitle: "Options d'emplacement personnalisé",
         customModalDesc: "Spécifiez le fichier de base de données sur votre disque. L'application le mémorisera pour le prochain lancement.",
         customSelectFileBtn: "SÉLECTIONNER ET ENREGISTRER LE FICHIER",
+        optionsModalTitle: "Options du compte",
+        renameBtn: "RENOMMER",
+        moveUpBtn: "DÉPLACER VERS LE HAUT",
+        moveDownBtn: "DÉPLACER VERS LE BAS",
+        renamePrompt: "Entrez le nouveau nom pour le compte:",
         wrongPassword: "Mot de passe principal incorrect!",
         passwordsMismatch: "Les mots de passe ne correspondent pas!",
         enterPassword: "Veuillez entrer un mot de passe!",
@@ -1235,6 +1335,13 @@
       const customSelectFileBtn = document.getElementById('custom-select-file-btn');
       const customModalCancel = document.getElementById('custom-modal-cancel');
 
+      const optionsModalTitle = document.getElementById('options-modal-title');
+      const optRenameBtn = document.getElementById('opt-rename-btn');
+      const optMoveUpBtn = document.getElementById('opt-move-up-btn');
+      const optMoveDownBtn = document.getElementById('opt-move-down-btn');
+      const optDeleteBtn = document.getElementById('opt-delete-btn');
+      const optionsModalCancel = document.getElementById('options-modal-cancel');
+
       const addTitle = document.getElementById('add-modal-title');
       const newName = document.getElementById('new-name');
       const newSecret = document.getElementById('new-secret');
@@ -1272,6 +1379,13 @@
       if (customModalDesc) customModalDesc.textContent = t('customModalDesc');
       if (customSelectFileBtn) customSelectFileBtn.textContent = t('customSelectFileBtn');
       if (customModalCancel) customModalCancel.textContent = t('closeBtn');
+
+      if (optionsModalTitle) optionsModalTitle.textContent = t('optionsModalTitle');
+      if (optRenameBtn) optRenameBtn.textContent = t('renameBtn');
+      if (optMoveUpBtn) optMoveUpBtn.textContent = t('moveUpBtn');
+      if (optMoveDownBtn) optMoveDownBtn.textContent = t('moveDownBtn');
+      if (optDeleteBtn) optDeleteBtn.textContent = t('deleteBtn');
+      if (optionsModalCancel) optionsModalCancel.textContent = t('cancelBtn');
 
       if (addTitle) addTitle.textContent = t('addAppTitle');
       if (newName) newName.placeholder = t('appNamePlaceholder');
@@ -1593,7 +1707,7 @@
           <div class="account-name">${name}</div>
           <div class="card-actions">
             <button class="btn-show" onclick="event.stopPropagation(); selectApp('${name}')">${t('showCodeBtn')}</button>
-            <button class="btn-del" onclick="event.stopPropagation(); deleteAccount('${name}')">${t('deleteBtn')}</button>
+            <button class="btn-opt" title="Options" onclick="event.stopPropagation(); showAccountOptions('${name}')">${t('optionsBtn')}</button>
           </div>
         `;
         list.appendChild(card);
@@ -1646,6 +1760,111 @@
       lastRenderedCode = code;
     }
 
+    function showAccountOptions(name) {
+      targetOptionApp = name;
+      document.getElementById('options-target-name').textContent = name;
+
+      const keys = Object.keys(vaultData).filter(k => k !== "_settings");
+      const currentIndex = keys.indexOf(name);
+
+      const moveUpBtn = document.getElementById('opt-move-up-btn');
+      const moveDownBtn = document.getElementById('opt-move-down-btn');
+
+      if (currentIndex === 0) {
+        moveUpBtn.style.display = 'none';
+      } else {
+        moveUpBtn.style.display = 'block';
+      }
+
+      if (currentIndex === keys.length - 1) {
+        moveDownBtn.style.display = 'none';
+      } else {
+        moveDownBtn.style.display = 'block';
+      }
+
+      document.getElementById('options-modal').style.display = 'flex';
+    }
+
+    function hideOptionsModal() {
+      targetOptionApp = null;
+      document.getElementById('options-modal').style.display = 'none';
+    }
+
+    async function renameCurrentAccount() {
+      if (!targetOptionApp) return;
+      const oldName = targetOptionApp;
+      const newName = prompt(t('renamePrompt'), oldName);
+
+      if (newName && newName.trim() !== "" && newName !== oldName) {
+        const trimmed = newName.trim();
+        const entries = Object.entries(vaultData);
+        const newVaultData = {};
+
+        for (const [k, v] of entries) {
+          if (k === oldName) {
+            newVaultData[trimmed] = v;
+          } else {
+            newVaultData[k] = v;
+          }
+        }
+
+        vaultData = newVaultData;
+        if (selectedApp === oldName) {
+          selectedApp = trimmed;
+        }
+
+        await saveVault();
+        hideOptionsModal();
+        renderUI();
+      }
+    }
+
+    async function moveCurrentAccount(direction) {
+      if (!targetOptionApp) return;
+      const keys = Object.keys(vaultData).filter(k => k !== "_settings");
+      const currentIndex = keys.indexOf(targetOptionApp);
+
+      if (direction === 'up' && currentIndex > 0) {
+        const targetIndex = currentIndex - 1;
+        const temp = keys[currentIndex];
+        keys[currentIndex] = keys[targetIndex];
+        keys[targetIndex] = temp;
+      } else if (direction === 'down' && currentIndex < keys.length - 1) {
+        const targetIndex = currentIndex + 1;
+        const temp = keys[currentIndex];
+        keys[currentIndex] = keys[targetIndex];
+        keys[targetIndex] = temp;
+      } else {
+        return;
+      }
+
+      const newVaultData = {};
+      if (vaultData._settings) {
+        newVaultData._settings = vaultData._settings;
+      }
+
+      for (const k of keys) {
+        newVaultData[k] = vaultData[k];
+      }
+
+      vaultData = newVaultData;
+      await saveVault();
+      hideOptionsModal();
+      renderUI();
+    }
+
+    async function deleteCurrentAccount() {
+      if (!targetOptionApp) return;
+      const name = targetOptionApp;
+      if (confirm(`${t('deleteConfirm')} ${name}?`)) {
+        delete vaultData[name];
+        if (selectedApp === name) selectedApp = null;
+        await saveVault();
+        hideOptionsModal();
+        renderUI();
+      }
+    }
+
     async function saveNewAccount() {
       const name = document.getElementById('new-name').value.trim();
       const secret = document.getElementById('new-secret').value.trim();
@@ -1655,15 +1874,6 @@
         await saveVault();
         selectedApp = name;
         hideAddModal();
-        renderUI();
-      }
-    }
-
-    async function deleteAccount(name) {
-      if (confirm(`${t('deleteConfirm')} ${name}?`)) {
-        delete vaultData[name];
-        if (selectedApp === name) selectedApp = null;
-        await saveVault();
         renderUI();
       }
     }
